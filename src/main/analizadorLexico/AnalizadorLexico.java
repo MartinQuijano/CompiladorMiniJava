@@ -449,8 +449,6 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e32();
         } else {
-            actualizarLexema();
-            actualizarCaracterActual();
             return new Token("!", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
@@ -465,8 +463,6 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e34();
         } else {
-            actualizarLexema();
-            actualizarCaracterActual();
             return new Token(">", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
@@ -481,8 +477,6 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e36();
         } else {
-            actualizarLexema();
-            actualizarCaracterActual();
             return new Token("<", lexema, procesadorDeArchivo.getNroLinea());
         }
     }

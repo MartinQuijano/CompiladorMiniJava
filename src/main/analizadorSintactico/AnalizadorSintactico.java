@@ -112,7 +112,7 @@ public class AnalizadorSintactico {
 
     private void tipo() throws ExcepcionLexica, ExcepcionSintactica {
         if (Arrays.asList("boolean", "char", "int", "String").contains(tokenActual.getNombre()))
-            tipoPrimitivo(); // podria hacer el match aca?
+            tipoPrimitivo();
         else if (tokenActual.getNombre().equals("idClase"))
             match("idClase");
         else
@@ -144,7 +144,7 @@ public class AnalizadorSintactico {
     private void tipoMetodo() throws ExcepcionLexica, ExcepcionSintactica {
         if(Arrays.asList("boolean", "char", "int", "String","idClase").contains(tokenActual.getNombre())){
             tipo();
-        } else if(tokenActual.equals("void")){
+        } else if(tokenActual.getNombre().equals("void")){
             match("void");
         } else {
             throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String, idClase, void");

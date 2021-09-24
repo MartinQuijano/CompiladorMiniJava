@@ -13,6 +13,10 @@ public class ExcepcionSintactica extends Exception {
     }
 
     public String getMensajeError() {
-        return "Error sintáctico en línea " + tokenEnError.getLinea() + ": se encontró " + tokenEnError.getNombre() + " cuando se esperaba un " + lexemasEsperados;
+        return "Error sintáctico en línea " + tokenEnError.getLinea() + ": se encontró el lexema " + tokenEnError.getLexema() + " (Token: " + tokenEnError.getNombre() + ") cuando se esperaba un " + lexemasEsperados;
+    }
+
+    public String getCodigoError(){
+        return "[Error:" + tokenEnError.getLexema() + "|" + tokenEnError.getLinea() + "]";
     }
 }

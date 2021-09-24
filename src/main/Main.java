@@ -17,19 +17,25 @@ public class Main {
 
     public static void main(String args[]) {
 
-        //ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo(args[0]);
-        ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\AnalizadorLexico\\resources\\test.java");
+        ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo(args[0]);
+        //ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\AnalizadorLexico\\resources\\test.java");
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(procesadorDeArchivo);
 
 
         try {
             AnalizadorSintactico analizadorSintactico = new AnalizadorSintactico(analizadorLexico);
         } catch (ExcepcionLexica e) {
-            e.printStackTrace();
+            System.out.println();
+            System.out.println(e.getMensajeError());
+            System.out.println(e.getDetalleErrorElegante());
+            System.out.println(e.getMarcadorDeError());
+            System.out.println(e.getCodigoError());
+            System.out.println();
         } catch (ExcepcionSintactica e) {
-            e.printStackTrace();
+            System.out.println(e.getMensajeError());
+            System.out.println(e.getCodigoError());
         }
-
+        System.out.println("[SinErrores]");
         /*int cantidadDeErroresEncontrados = 0;
 
         boolean seguir = true;
