@@ -25,26 +25,26 @@ public class AnalizadorLexico {
 
     private void construirHash() {
         hashMap = new HashMap<String, String>();
-        hashMap.put("class", "pr_class");
-        hashMap.put("extends", "pr_extends");
-        hashMap.put("static", "pr_static");
-        hashMap.put("dynamic", "pr_dynamic");
-        hashMap.put("void", "pr_void");
-        hashMap.put("boolean", "pr_boolean");
-        hashMap.put("char", "pr_char");
-        hashMap.put("int", "pr_int");
-        hashMap.put("String", "pr_String");
-        hashMap.put("public", "pr_public");
-        hashMap.put("private", "pr_private");
-        hashMap.put("if", "pr_if");
-        hashMap.put("else", "pr_else");
-        hashMap.put("for", "pr_for");
-        hashMap.put("return", "pr_return");
-        hashMap.put("this", "pr_this");
-        hashMap.put("new", "pr_new");
-        hashMap.put("null", "pr_null");
-        hashMap.put("true", "pr_true");
-        hashMap.put("false", "pr_false");
+        hashMap.put("class", "class");
+        hashMap.put("extends", "extends");
+        hashMap.put("static", "static");
+        hashMap.put("dynamic", "dynamic");
+        hashMap.put("void", "void");
+        hashMap.put("boolean", "boolean");
+        hashMap.put("char", "char");
+        hashMap.put("int", "int");
+        hashMap.put("String", "String");
+        hashMap.put("public", "public");
+        hashMap.put("private", "private");
+        hashMap.put("if", "if");
+        hashMap.put("else", "else");
+        hashMap.put("for", "for");
+        hashMap.put("return", "return");
+        hashMap.put("this", "this");
+        hashMap.put("new", "new");
+        hashMap.put("null", "null");
+        hashMap.put("true", "true");
+        hashMap.put("false", "false");
     }
 
     public void actualizarLexema() {
@@ -204,7 +204,7 @@ public class AnalizadorLexico {
         } else if (contadorDigitos > 9) {
             throw new ExcepcionLexica(lexema, procesadorDeArchivo.getNroLinea(), nroColumnaDondeIniciaElLexema, procesadorDeArchivo.getLineaActual(), "los números enteros no pueden contener más de 9 digitos");
         } else {
-            return new Token("entero", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("intLiteral", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
@@ -241,7 +241,7 @@ public class AnalizadorLexico {
     }
 
     private Token e7() {
-        return new Token("Caracter", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("charLiteral", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e8() throws ExcepcionLexica {
@@ -282,36 +282,36 @@ public class AnalizadorLexico {
             nroLineaInicioBloqueDeTexto = procesadorDeArchivo.getNroLinea();
             return e44();
         } else {
-            return new Token("String", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("stringLiteral", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e11() {
-        return new Token("parentesisA", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("(", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e12() {
-        return new Token("parentesisC", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token(")", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e13() {
-        return new Token("llaveA", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("{", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e14() {
-        return new Token("llaveC", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("}", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e15() {
-        return new Token("puntoComa", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token(";", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e16() {
-        return new Token("coma", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token(",", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e17() {
-        return new Token("punto", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token(".", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e18() {
@@ -320,12 +320,12 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e19();
         } else {
-            return new Token("op=", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("=", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e19() {
-        return new Token("op==", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("==", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e20() {
@@ -334,12 +334,12 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e21();
         } else {
-            return new Token("op+", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("+", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e21() {
-        return new Token("op++", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("++", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e22() {
@@ -348,16 +348,16 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e23();
         } else {
-            return new Token("op-", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("-", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e23() {
-        return new Token("op--", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("--", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e24() {
-        return new Token("op*", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("*", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e25() throws ExcepcionLexica {
@@ -371,7 +371,7 @@ public class AnalizadorLexico {
             actualizarCaracterActual();
             return e38();
         } else {
-            return new Token("op/", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("/", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
@@ -412,7 +412,7 @@ public class AnalizadorLexico {
     }
 
     private Token e30() {
-        return new Token("op%", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("%", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e26() throws ExcepcionLexica {
@@ -426,7 +426,7 @@ public class AnalizadorLexico {
     }
 
     private Token e27() {
-        return new Token("op&&", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("&&", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e28() throws ExcepcionLexica {
@@ -440,7 +440,7 @@ public class AnalizadorLexico {
     }
 
     private Token e29() {
-        return new Token("op||", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("||", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e31() {
@@ -451,12 +451,12 @@ public class AnalizadorLexico {
         } else {
             actualizarLexema();
             actualizarCaracterActual();
-            return new Token("op!", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("!", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e32() {
-        return new Token("op!=", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("!=", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e33() {
@@ -467,12 +467,12 @@ public class AnalizadorLexico {
         } else {
             actualizarLexema();
             actualizarCaracterActual();
-            return new Token("op>", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token(">", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e34() {
-        return new Token("op>=", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token(">=", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e35() {
@@ -483,12 +483,12 @@ public class AnalizadorLexico {
         } else {
             actualizarLexema();
             actualizarCaracterActual();
-            return new Token("op<", lexema, procesadorDeArchivo.getNroLinea());
+            return new Token("<", lexema, procesadorDeArchivo.getNroLinea());
         }
     }
 
     private Token e36() {
-        return new Token("op<=", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("<=", lexema, procesadorDeArchivo.getNroLinea());
     }
 
     private Token e42() {
@@ -576,10 +576,10 @@ public class AnalizadorLexico {
     }
 
     private Token e48() {
-        return new Token("String", lexema, nroLineaInicioBloqueDeTexto);
+        return new Token("stringLiteral", lexema, nroLineaInicioBloqueDeTexto);
     }
 
     private Token e49() {
-        return new Token("String", lexema, procesadorDeArchivo.getNroLinea());
+        return new Token("stringLiteral", lexema, procesadorDeArchivo.getNroLinea());
     }
 }
