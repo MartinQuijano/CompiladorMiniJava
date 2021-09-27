@@ -28,6 +28,7 @@ public class AnalizadorSintactico {
 
     private void inicial() throws ExcepcionLexica, ExcepcionSintactica {
         listaClases();
+        match("EOF");
     }
 
     private void listaClases() throws ExcepcionLexica, ExcepcionSintactica {
@@ -417,6 +418,8 @@ public class AnalizadorSintactico {
             llamadaOVariableEncadenado();
         } else if(tokenActual.getNombre().equals("(")){
             match("(");
+            expresion();
+            match(")");
             encadenado();
         } else {
             throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar, (");

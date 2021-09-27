@@ -1,4 +1,4 @@
-///[Error:}|5]
+///[Error:|8]
 // Luego del { del metodo se encuentra otro } que cierra el metodo pero se suponia que ese pertenece al bloque de la clase, de todas maneras esto se toma como valido y el que esta mal es el bloque de la clase
 class Clase{
 

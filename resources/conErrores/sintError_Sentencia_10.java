@@ -1,5 +1,5 @@
-///[Error:)|8]
-// Luego de 'else' se espera encontrar uno de los primeros de <Sentencia> y se encuentra ')'
+///[Error:else|8]
+// Luego de 'a=5' se espera encontrar ';' y se encuentra 'else
 class Clase{
 
     static void metodo(){

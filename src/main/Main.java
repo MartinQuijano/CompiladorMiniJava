@@ -21,9 +21,9 @@ public class Main {
         //ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\AnalizadorLexico\\resources\\test.java");
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(procesadorDeArchivo);
 
-
         try {
             AnalizadorSintactico analizadorSintactico = new AnalizadorSintactico(analizadorLexico);
+            System.out.println("[SinErrores]");
         } catch (ExcepcionLexica e) {
             System.out.println();
             System.out.println(e.getMensajeError());
@@ -35,7 +35,7 @@ public class Main {
             System.out.println(e.getMensajeError());
             System.out.println(e.getCodigoError());
         }
-        System.out.println("[SinErrores]");
+
         /*int cantidadDeErroresEncontrados = 0;
 
         boolean seguir = true;

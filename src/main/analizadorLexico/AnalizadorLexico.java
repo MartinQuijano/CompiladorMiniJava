@@ -343,7 +343,7 @@ public class AnalizadorLexico {
     }
 
     private Token e22() {
-        if (caracterActual == '+') {
+        if (caracterActual == '-') {
             actualizarLexema();
             actualizarCaracterActual();
             return e23();
