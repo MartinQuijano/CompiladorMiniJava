@@ -23,6 +23,8 @@ public class Main {
 
         try {
             AnalizadorSintactico analizadorSintactico = new AnalizadorSintactico(analizadorLexico);
+            System.out.println("Compilación exitosa");
+            System.out.println();
             System.out.println("[SinErrores]");
         } catch (ExcepcionLexica e) {
             System.out.println();
