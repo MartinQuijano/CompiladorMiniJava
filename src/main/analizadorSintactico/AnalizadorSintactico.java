@@ -63,7 +63,7 @@ public class AnalizadorSintactico {
     }
 
     private void listaMiembros() throws ExcepcionSintactica, ExcepcionLexica {
-        if (Arrays.asList("public", "private", "idClase", "static", "dynamic").contains(tokenActual.getNombre())) {
+        if (Arrays.asList("public", "private", "boolean", "char", "int", "String", "idClase", "static", "dynamic").contains(tokenActual.getNombre())) {
             miembro();
             listaMiembros();
         } else {
@@ -74,12 +74,32 @@ public class AnalizadorSintactico {
     private void miembro() throws ExcepcionSintactica, ExcepcionLexica {
         if (Arrays.asList("public", "private").contains(tokenActual.getNombre())) {
             atributo();
-        } else if (Arrays.asList("idClase").contains(tokenActual.getNombre())) {
-            constructor();
+        } else if (Arrays.asList("idClase", "boolean", "char", "int", "String").contains(tokenActual.getNombre())) {
+            constructorOAtributoSinVisibilidad();
         } else if (Arrays.asList("static", "dynamic").contains(tokenActual.getNombre())) {
             metodo();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "public, private, idClase, static, dynamic");
+            throw new ExcepcionSintactica(tokenActual, "public, private, boolean, char, int, String, idClase, static, dynamic");
+        }
+    }
+
+    private void constructorOAtributoSinVisibilidad() throws ExcepcionLexica, ExcepcionSintactica {
+        if(tokenActual.getNombre().equals("idClase")){
+            match("idClase");
+            constructorOAtributo();
+        } else {
+            tipoPrimitivo();
+            listaDecAtrs();
+            match(";");
+        }
+    }
+
+    private void constructorOAtributo() throws ExcepcionLexica, ExcepcionSintactica {
+        if(tokenActual.getNombre().equals("(")){
+            constructor();
+        } else if (tokenActual.getNombre().equals("idMetVar")){
+            listaDecAtrs();
+            match(";");
         }
     }
 
@@ -99,7 +119,6 @@ public class AnalizadorSintactico {
     }
 
     private void constructor() throws ExcepcionLexica, ExcepcionSintactica {
-        match("idClase");
         argsFormales();
         bloque();
     }
