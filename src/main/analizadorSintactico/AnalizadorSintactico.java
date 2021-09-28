@@ -338,13 +338,24 @@ public class AnalizadorSintactico {
     private void forMetodo() throws ExcepcionLexica, ExcepcionSintactica {
         match("for");
         match("(");
-        varLocal();
-        match(";");
-        expresion();
-        match(";");
-        asignacion();
+        tipo();
+        match("idMetVar");
+        forOForEach();
         match(")");
         sentencia();
+    }
+
+    private void forOForEach() throws ExcepcionLexica, ExcepcionSintactica {
+        if(tokenActual.getNombre().equals(":")){
+            match(":");
+            match("idMetVar");
+        } else {
+            varLocalTransformado();
+            match(";");
+            expresion();
+            match(";");
+            asignacion();
+        }
     }
 
     private void expresion() throws ExcepcionSintactica, ExcepcionLexica {

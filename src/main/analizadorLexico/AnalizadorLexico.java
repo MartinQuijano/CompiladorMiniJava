@@ -153,6 +153,12 @@ public class AnalizadorLexico {
             actualizarLexema();
             actualizarCaracterActual();
             return e35();
+
+        }else if (caracterActual == ':') {
+            actualizarLexema();
+            actualizarCaracterActual();
+            return e50();
+
         } else if (Character.isWhitespace(caracterActual) || procesadorDeArchivo.esEOL(caracterActual) || procesadorDeArchivo.esCR(caracterActual)) {
             actualizarCaracterActual();
             return e0();
@@ -575,5 +581,9 @@ public class AnalizadorLexico {
 
     private Token e49() {
         return new Token("stringLiteral", lexema, procesadorDeArchivo.getNroLinea());
+    }
+
+    private Token e50(){
+        return new Token(":", lexema, procesadorDeArchivo.getNroLinea());
     }
 }
