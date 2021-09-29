@@ -79,7 +79,7 @@ public class AnalizadorSintactico {
         } else if (Arrays.asList("static", "dynamic").contains(tokenActual.getNombre())) {
             metodo();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "public, private, boolean, char, int, String, idClase, static, dynamic");
+            throw new ExcepcionSintactica(tokenActual, "public, private, boolean, char, int, String, idClase, static o dynamic");
         }
     }
 
@@ -136,7 +136,7 @@ public class AnalizadorSintactico {
         else if (tokenActual.getNombre().equals("idClase"))
             match("idClase");
         else
-            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String, idClase");
+            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String o idClase");
     }
 
     private void tipoPrimitivo() throws ExcepcionLexica, ExcepcionSintactica {
@@ -167,7 +167,7 @@ public class AnalizadorSintactico {
         } else if(tokenActual.getNombre().equals("void")){
             match("void");
         } else {
-            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String, idClase, void");
+            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String, idClase o void");
         }
     }
 
@@ -194,14 +194,14 @@ public class AnalizadorSintactico {
             argFormal();
             listaArgsFormalesTransformado();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String, idClase");
+            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String o idClase");
         }
     }
 
     private void listaArgsFormalesTransformado() throws ExcepcionLexica, ExcepcionSintactica {
         if(tokenActual.getNombre().equals(",")){
             match(",");
-            argFormal();
+            listaArgsFormales();
         } else {
 
         }
@@ -212,7 +212,7 @@ public class AnalizadorSintactico {
             tipo();
             match("idMetVar");
         } else {
-            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String, idClase");
+            throw new ExcepcionSintactica(tokenActual, "boolean, char, int, String o idClase");
         }
     }
 
@@ -255,7 +255,7 @@ public class AnalizadorSintactico {
         } else if(tokenActual.getNombre().equals("{")){
             bloque();
         } else {
-            throw new ExcepcionSintactica(tokenActual, ";, this, new, idMetVar, (, boolean, char, int, String, idClase, return, if, for, {");
+            throw new ExcepcionSintactica(tokenActual, ";, this, new, idMetVar, (, boolean, char, int, String, idClase, return, if, for o {");
         }
     }
 
@@ -272,7 +272,7 @@ public class AnalizadorSintactico {
             acceso();
             tipoDeAsignacion();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar, (");
+            throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar o (");
         }
     }
 
@@ -285,7 +285,7 @@ public class AnalizadorSintactico {
         } else if(tokenActual.getNombre().equals("--")){
             match("--");
         } else {
-            throw new ExcepcionSintactica(tokenActual, "=, ++, --");
+            throw new ExcepcionSintactica(tokenActual, "=, ++ o --");
         }
     }
 
@@ -363,7 +363,7 @@ public class AnalizadorSintactico {
             expresionUnaria();
             expresionTransformado();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar, (");
+            throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar o (");
         }
     }
 
@@ -388,7 +388,7 @@ public class AnalizadorSintactico {
         } else if(Arrays.asList("null", "true", "false", "intLiteral", "charLiteral", "stringLiteral", "this", "new", "idMetVar", "(").contains(tokenActual.getNombre())){
             operando();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar, (");
+            throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar o (");
         }
     }
 
@@ -402,7 +402,7 @@ public class AnalizadorSintactico {
         } else if(Arrays.asList("this", "new", "idMetVar", "(").contains(tokenActual.getNombre())){
             acceso();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar, (");
+            throw new ExcepcionSintactica(tokenActual, "null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar o (");
         }
     }
 
@@ -421,7 +421,7 @@ public class AnalizadorSintactico {
             match("(");
             expresionOCasting();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar, (");
+            throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar o (");
         }
     }
 
@@ -435,7 +435,7 @@ public class AnalizadorSintactico {
             match(")");
             primario();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar, (, idClase");
+            throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar, ( o idClase");
         }
     }
 
@@ -452,7 +452,7 @@ public class AnalizadorSintactico {
             match(")");
             encadenado();
         } else {
-            throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar, (");
+            throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar o (");
         }
     }
 

@@ -14,14 +14,14 @@ class ClaseA{
         if(cantidad > valor){
             mostrarCantidadFueraDeRango();
             valor--;
-        } else mostrarPorPantalla(cantidad + valor + 10);
+        } else mostrarPorPantalla(cantidad + valor + 10, "texto1", "texto2");
     }
 
     dynamic void mostrarCantidadFueraDeRango(){
 
     }
 
-    static void mostrarPorPantalla(int total){
+    static void mostrarPorPantalla(int total, String texto1, String texto2){
         if((true && false) || ((3+3) < 7))
             system.out.println(total);
         else

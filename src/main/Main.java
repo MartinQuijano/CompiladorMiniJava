@@ -38,40 +38,5 @@ public class Main {
             System.out.println(e.getCodigoError());
         }
 
-        /*int cantidadDeErroresEncontrados = 0;
-
-        boolean seguir = true;
-        Token tokenActual = null;
-
-        while (seguir || !tokenActual.getNombre().equals("EOF")) {
-
-            seguir = false;
-            try {
-                tokenActual = analizadorLexico.proximoToken();
-                print_token(tokenActual);
-            } catch (ExcepcionLexica e) {
-                System.out.println();
-                System.out.println(e.getMensajeError());
-                System.out.println(e.getDetalleErrorElegante());
-                System.out.println(e.getMarcadorDeError());
-                System.out.println(e.getCodigoError());
-                System.out.println();
-                cantidadDeErroresEncontrados++;
-                seguir = true;
-            }
-
-        }
-
-        if (tokenActual.getNombre().equals("EOF")) {
-            procesadorDeArchivo.finalizarUso();
-            System.out.println();
-            if (cantidadDeErroresEncontrados == 1)
-                System.out.println(String.format("[Se encontró %d error]", cantidadDeErroresEncontrados));
-            else if (cantidadDeErroresEncontrados > 1)
-                System.out.println(String.format("[Se encontraron %d errores]", cantidadDeErroresEncontrados));
-            else
-                System.out.println("[SinErrores]");
-            seguir = false;
-        }*/
     }
 }
