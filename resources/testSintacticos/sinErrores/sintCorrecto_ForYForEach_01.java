@@ -20,6 +20,7 @@ class ClaseA{
         for(int i : coleccion){
 
         }
+
     }
     
 }

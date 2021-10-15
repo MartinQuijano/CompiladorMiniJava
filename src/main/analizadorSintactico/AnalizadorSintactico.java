@@ -121,6 +121,8 @@ public class AnalizadorSintactico {
             genericidad();
             listaDecAtrs(visibilidad, tipo);
             match(";");
+        } else {
+            throw new ExcepcionSintactica(tokenActual, "(, idMetVar o <");
         }
     }
 
@@ -223,12 +225,20 @@ public class AnalizadorSintactico {
         }
     }
 
-    private Tipo tipoClaseGenericidadOPrimitivo() throws ExcepcionLexica, ExcepcionSintactica {
+    private Tipo tipoClaseGenericidad() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("idClase")) {
             Token tokenTipo = tokenActual;
             match("idClase");
             genericidad();
             return new TipoReferencia(tokenTipo);
+        }  else {
+            throw new ExcepcionSintactica(tokenActual, "idClase");
+        }
+    }
+
+    private Tipo tipoClaseGenericidadOPrimitivo() throws ExcepcionLexica, ExcepcionSintactica {
+        if (tokenActual.getNombre().equals("idClase")) {
+            return tipoClaseGenericidad();
         } else if(Arrays.asList("boolean", "char", "int", "String").contains(tokenActual.getNombre())){
             return tipoPrimitivo();
         } else {
@@ -472,7 +482,7 @@ public class AnalizadorSintactico {
     private void forMetodo() throws ExcepcionLexica, ExcepcionSintactica {
         match("for");
         match("(");
-        tipo();
+        tipoClaseGenericidadOPrimitivo();
         match("idMetVar");
         forOForEach();
         match(")");
@@ -482,7 +492,7 @@ public class AnalizadorSintactico {
     private void forOForEach() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals(":")) {
             match(":");
-            match("idMetVar");
+            acceso();
         } else {
             varLocalTransformado();
             match(";");
@@ -565,7 +575,7 @@ public class AnalizadorSintactico {
             match(")");
             encadenado();
         } else if (tokenActual.getNombre().equals("idClase")) {
-            match("idClase");
+            tipoClaseGenericidad();
             match(")");
             primario();
         } else {

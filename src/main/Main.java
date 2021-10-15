@@ -28,13 +28,11 @@ public class Main {
         try {
             TablaDeSimbolos.restablecer();
             AnalizadorSintactico analizadorSintactico = new AnalizadorSintactico(analizadorLexico);
-            //tablaDeSimbolos.mostrarTabla();
-            TablaDeSimbolos.comprobarDeclaraciones();
-            TablaDeSimbolos.consolidar();
+            //TablaDeSimbolos.comprobarDeclaraciones();
+            //TablaDeSimbolos.consolidar();
             System.out.println("Compilación exitosa");
             System.out.println();
             System.out.println("[SinErrores]");
-            //tablaDeSimbolos.mostrarTabla();
         } catch (ExcepcionLexica e) {
             System.out.println();
             System.out.println(e.getMensajeError());
