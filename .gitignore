@@ -4,3 +4,5 @@
 .DS_Store
 out/
 *.class
+/src/JavaTest.java
+/resources/test.java

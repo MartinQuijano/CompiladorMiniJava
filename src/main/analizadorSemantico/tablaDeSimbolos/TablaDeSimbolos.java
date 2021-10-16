@@ -33,7 +33,6 @@ public final class TablaDeSimbolos {
     private static void inicializarSystem(){
         Clase system = new Clase(new Token("System", "System", 0));
         system.heredaDe(new Token("Object", "Object", 0));
-        system.setConsolidacion(true);
 
         Metodo read = new Metodo(new Token("idMetVar", "read",0), new TipoEntero(), "static");
         system.insertarMetodo(read);

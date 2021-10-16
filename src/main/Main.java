@@ -28,8 +28,8 @@ public class Main {
         try {
             TablaDeSimbolos.restablecer();
             AnalizadorSintactico analizadorSintactico = new AnalizadorSintactico(analizadorLexico);
-            //TablaDeSimbolos.comprobarDeclaraciones();
-            //TablaDeSimbolos.consolidar();
+            TablaDeSimbolos.comprobarDeclaraciones();
+            TablaDeSimbolos.consolidar();
             System.out.println("Compilación exitosa");
             System.out.println();
             System.out.println("[SinErrores]");

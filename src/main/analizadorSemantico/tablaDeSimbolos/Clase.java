@@ -54,6 +54,10 @@ public class Clase {
         atributos.put(atributoAInsertar.getTokenDeDatos().getLexema(), atributoAInsertar);
     }
 
+    public void insertarAtributoDeAncestro(Atributo atributoAInsertar, String nombreAncestro){
+        atributos.put(nombreAncestro + "." + atributoAInsertar.getTokenDeDatos().getLexema(), atributoAInsertar);
+    }
+
     public void insertarConstructor(Unidad constructor){
         this.constructor = constructor;
     }
@@ -114,13 +118,14 @@ public class Clase {
         consolidada = true;
     }
 
-    private void consolidarAtributos() throws ExcepcionSemantica {
+    private void consolidarAtributos(){
         Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
         for(Atributo atributo : claseAncestro.getAtributos().values()){
             Atributo atributoYaExistente = existeAtributo(atributo.getTokenDeDatos().getLexema());
             if(atributoYaExistente != null)
-                throw new ExcepcionSemantica(atributoYaExistente.getTokenDeDatos(), "El atributo '" + atributoYaExistente.getTokenDeDatos().getLexema() + "' ya esta declarado en una clase ancestro.");
-            insertarAtributo(atributo);
+                insertarAtributoDeAncestro(atributo, claseAncestro.getTokenDeDatos().getLexema());
+            else
+                insertarAtributo(atributo);
         }
     }
 
