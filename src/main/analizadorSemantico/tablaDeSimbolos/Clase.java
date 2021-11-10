@@ -2,6 +2,12 @@ package main.analizadorSemantico.tablaDeSimbolos;
 
 import main.analizadorLexico.Token;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
+import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
+import main.analizadorSemantico.tablaDeSimbolos.tipos.TipoReferencia;
+import main.analizadorSemantico.tablaDeSimbolos.unidades.Metodo;
+import main.analizadorSemantico.tablaDeSimbolos.unidades.Unidad;
+import main.analizadorSemantico.tablaDeSimbolos.variables.Atributo;
+import main.analizadorSemantico.tablaDeSimbolos.variables.Parametro;
 
 import java.util.HashMap;
 
@@ -11,6 +17,7 @@ public class Clase {
     private Token heredaDe;
     private Unidad constructor;
     private boolean consolidada;
+    private Tipo tipo;
 
     private HashMap<String, Atributo> atributos;
     private HashMap<String, Metodo> metodos;
@@ -22,6 +29,11 @@ public class Clase {
         heredaDe = null;
         consolidada = false;
         constructor = null;
+        tipo = new TipoReferencia(tokenDeDatos);
+    }
+
+    public Tipo getTipo(){
+        return tipo;
     }
 
     public void heredaDe(Token clasePadre){
@@ -124,9 +136,17 @@ public class Clase {
             Atributo atributoYaExistente = existeAtributo(atributo.getTokenDeDatos().getLexema());
             if(atributoYaExistente != null)
                 insertarAtributoDeAncestro(atributo, claseAncestro.getTokenDeDatos().getLexema());
-            else
-                insertarAtributo(atributo);
+            else{
+                if(atributo.getVisibilidad().equals("private"))
+                    insertarAtributoDeAncestroPrivado(atributo, claseAncestro.getTokenDeDatos().getLexema());
+                else
+                    insertarAtributo(atributo);
+            }
         }
+    }
+
+    private void insertarAtributoDeAncestroPrivado(Atributo atributoAInsertar, String nombreAncestro) {
+        atributos.put("-" + nombreAncestro + "." + atributoAInsertar.getTokenDeDatos().getLexema(), atributoAInsertar);
     }
 
     private void consolidarMetodos() throws ExcepcionSemantica {
@@ -161,8 +181,6 @@ public class Clase {
 
     private boolean coincidenLosParametros(Parametro parametroClase, Parametro parametroAncestro){
         if(!parametroClase.getTipo().getTokenDeDatos().getLexema().equals(parametroAncestro.getTipo().getTokenDeDatos().getLexema()))
-            return false;
-        if(!parametroClase.getTokenDeDatos().getLexema().equals(parametroAncestro.getTokenDeDatos().getLexema()))
             return false;
         return true;
     }

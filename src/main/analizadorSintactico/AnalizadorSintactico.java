@@ -3,8 +3,24 @@ package main.analizadorSintactico;
 import main.analizadorLexico.AnalizadorLexico;
 import main.analizadorLexico.Token;
 import main.analizadorLexico.excepciones.ExcepcionLexica;
+import main.analizadorSemantico.ast.*;
+import main.analizadorSemantico.ast.encadenados.NodoEncadenado;
+import main.analizadorSemantico.ast.encadenados.NodoLlamadaEncadenada;
+import main.analizadorSemantico.ast.encadenados.NodoVarEncadenada;
+import main.analizadorSemantico.ast.expresiones.NodoExpBinaria;
+import main.analizadorSemantico.ast.expresiones.NodoExpUnaria;
+import main.analizadorSemantico.ast.expresiones.NodoExpresion;
+import main.analizadorSemantico.ast.expresiones.operandos.*;
+import main.analizadorSemantico.ast.expresiones.operandos.accesos.*;
+import main.analizadorSemantico.ast.sentencias.*;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
 import main.analizadorSemantico.tablaDeSimbolos.*;
+import main.analizadorSemantico.tablaDeSimbolos.tipos.*;
+import main.analizadorSemantico.tablaDeSimbolos.unidades.Constructor;
+import main.analizadorSemantico.tablaDeSimbolos.unidades.Metodo;
+import main.analizadorSemantico.tablaDeSimbolos.unidades.Unidad;
+import main.analizadorSemantico.tablaDeSimbolos.variables.Atributo;
+import main.analizadorSemantico.tablaDeSimbolos.variables.Parametro;
 import main.analizadorSintactico.excepciones.ExcepcionSintactica;
 
 import java.util.Arrays;
@@ -61,6 +77,7 @@ public class AnalizadorSintactico {
         if(TablaDeSimbolos.existeClase(tokenDeClase.getLexema()) == null) {
             if(clase.getConstructor() == null){
                 Unidad constructorPorDefecto = new Constructor(new Token("idClase", clase.getTokenDeDatos().getLexema(),0));
+                constructorPorDefecto.setBloque(new NodoBloque());
                 clase.insertarConstructor(constructorPorDefecto);
             }
             TablaDeSimbolos.insertarClase(clase);
@@ -138,7 +155,7 @@ public class AnalizadorSintactico {
         Tipo tipo = tipoMetodo();
         Token tokenDeDatos = tokenActual;
         match("idMetVar");
-        Metodo metodo = new Metodo(tokenDeDatos, tipo, forma);
+        Metodo metodo = new Metodo(tokenDeDatos, tipo, forma, TablaDeSimbolos.getClaseActual().getTokenDeDatos().getLexema());
         TablaDeSimbolos.setUnidadActual(metodo);
         argsFormales();
 
@@ -153,7 +170,7 @@ public class AnalizadorSintactico {
         }
         else
             throw new ExcepcionSemantica(tokenDeDatos, "Ya existe un metodo con el nombre " + tokenDeDatos.getLexema() + " en la clase '" + TablaDeSimbolos.getClaseActual().getTokenDeDatos().getLexema() + "'.");
-        bloque();
+        TablaDeSimbolos.getUnidadActual().setBloque(bloque());
     }
 
     private void constructor(Tipo tipo) throws ExcepcionLexica, ExcepcionSintactica, ExcepcionSemantica {
@@ -165,7 +182,7 @@ public class AnalizadorSintactico {
         TablaDeSimbolos.getClaseActual().insertarConstructor(constructor);
         TablaDeSimbolos.setUnidadActual(constructor);
         argsFormales();
-        bloque();
+        TablaDeSimbolos.getUnidadActual().setBloque(bloque());
     }
 
     private String visibilidad() throws ExcepcionLexica, ExcepcionSintactica {
@@ -360,11 +377,15 @@ public class AnalizadorSintactico {
         }
     }
 
-    private void bloque() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoBloque bloque() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("{")) {
             match("{");
+            NodoBloque nodoBloque = new NodoBloque();
+            TablaDeSimbolos.getBloques().push(nodoBloque);
             listaSentencias();
             match("}");
+            TablaDeSimbolos.getBloques().pop();
+            return nodoBloque;
         } else {
             throw new ExcepcionSintactica(tokenActual, "{");
         }
@@ -372,261 +393,362 @@ public class AnalizadorSintactico {
 
     private void listaSentencias() throws ExcepcionLexica, ExcepcionSintactica {
         if (Arrays.asList(";", "this", "new", "idMetVar", "(", "boolean", "char", "int", "String", "idClase", "return", "if", "for", "{").contains(tokenActual.getNombre())) {
-            sentencia();
+            NodoSentencia nodoSentencia = sentencia();
+            TablaDeSimbolos.getBloques().peek().insertarSentencia(nodoSentencia);
             listaSentencias();
         } else {
 
         }
     }
 
-    private void sentencia() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoSentencia sentencia() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals(";")) {
             match(";");
+            NodoSentenciaVacia nodoSentenciaVacia = new NodoSentenciaVacia();
+            return nodoSentenciaVacia;
         } else if (Arrays.asList("this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            acceso();
-            sentenciaTransformado();
+            NodoAcceso nodoAcceso = acceso();
+            NodoTipoAsignacion nodoTipoAsignacion = sentenciaTransformado();
+            Token tokenDeDatosDeLLamada = tokenActual;
             match(";");
+            if(nodoTipoAsignacion == null)
+                return new NodoLlamada(tokenDeDatosDeLLamada, nodoAcceso);
+            else {
+                return new NodoAsignacion(nodoAcceso, nodoTipoAsignacion);
+            }
         } else if (Arrays.asList("boolean", "char", "int", "String", "idClase").contains(tokenActual.getNombre())) {
-            varLocal();
+            NodoVarLocal nodoVarLocal = varLocal();
             match(";");
+            return nodoVarLocal;
         } else if (tokenActual.getNombre().equals("return")) {
-            returnMetodo();
+            Token tokenDeDatosReturn = tokenActual;
+            NodoReturn nodoReturn = returnMetodo();
+            nodoReturn.setTokenDeDatos(tokenDeDatosReturn);
             match(";");
+            return nodoReturn;
         } else if (tokenActual.getNombre().equals("if")) {
-            ifMetodo();
+            NodoIf nodoIf = ifMetodo();
+            return nodoIf;
         } else if (tokenActual.getNombre().equals("for")) {
-            forMetodo();
+            NodoFor nodoFor = forMetodo();
+            return nodoFor;
         } else if (tokenActual.getNombre().equals("{")) {
-            bloque();
+            NodoBloque nodoBloque = bloque();
+            return nodoBloque;
         } else {
             throw new ExcepcionSintactica(tokenActual, ";, this, new, idMetVar, (, boolean, char, int, String, idClase, return, if, for o {");
         }
     }
 
-    private void sentenciaTransformado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoTipoAsignacion sentenciaTransformado() throws ExcepcionLexica, ExcepcionSintactica {
         if (Arrays.asList("=", "++", "--").contains(tokenActual.getNombre())) {
-            tipoDeAsignacion();
+            return tipoDeAsignacion();
         } else {
-
+            return null;
         }
     }
 
-    private void asignacion() throws ExcepcionSintactica, ExcepcionLexica {
+    private NodoAsignacion asignacion() throws ExcepcionSintactica, ExcepcionLexica {
         if (Arrays.asList("this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            acceso();
-            tipoDeAsignacion();
+            NodoAcceso nodoAcceso = acceso();
+            NodoTipoAsignacion nodoTipoAsignacion = tipoDeAsignacion();
+            NodoAsignacion nodoAsignacion = new NodoAsignacion(nodoAcceso, nodoTipoAsignacion);
+            return nodoAsignacion;
         } else {
             throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar o (");
         }
     }
 
-    private void tipoDeAsignacion() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoTipoAsignacion tipoDeAsignacion() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("=")) {
+            Token tokenDeDatos = tokenActual;
             match("=");
-            expresion();
+            NodoTipoAsignacion nodoTipoAsignacion = new NodoTipoAsignacion(tokenDeDatos);
+            NodoExpresion nodoExpresion = expresion();
+            nodoTipoAsignacion.setExpresion(nodoExpresion);
+            return nodoTipoAsignacion;
         } else if (tokenActual.getNombre().equals("++")) {
+            Token tokenDeDatos = tokenActual;
             match("++");
+            NodoTipoAsignacion nodoTipoAsignacion = new NodoTipoAsignacion(tokenDeDatos);
+            return nodoTipoAsignacion;
         } else if (tokenActual.getNombre().equals("--")) {
+            Token tokenDeDatos = tokenActual;
             match("--");
+            NodoTipoAsignacion nodoTipoAsignacion = new NodoTipoAsignacion(tokenDeDatos);
+            return nodoTipoAsignacion;
         } else {
             throw new ExcepcionSintactica(tokenActual, "=, ++ o --");
         }
     }
 
-    private void varLocal() throws ExcepcionLexica, ExcepcionSintactica {
-        tipoClaseGenericidadOPrimitivo();
+    private NodoVarLocal varLocal() throws ExcepcionLexica, ExcepcionSintactica {
+        Tipo tipo = tipoClaseGenericidadOPrimitivo();
+        Token tokenDeDatos = tokenActual;
         match("idMetVar");
-        varLocalTransformado();
+        return varLocalTransformado(tokenDeDatos, tipo);
     }
 
-    private void varLocalTransformado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoVarLocal varLocalTransformado(Token tokenDeDatos, Tipo tipo) throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("=")) {
+            Token tokenDeOperador = tokenActual;
             match("=");
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
+            NodoVarLocalAsignacion nodoVarLocalAsignacion = new NodoVarLocalAsignacion(tokenDeDatos, tokenDeOperador, tipo, nodoExpresion);
+            return nodoVarLocalAsignacion;
         } else {
-
+            NodoVarLocal nodoVarLocal = new NodoVarLocal(tokenDeDatos, tipo);
+            return nodoVarLocal;
         }
     }
 
-    private void returnMetodo() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoReturn returnMetodo() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatosReturn = tokenActual;
         match("return");
-        expresionOVacio();
+        return expresionOVacio(tokenDeDatosReturn);
     }
 
-    private void expresionOVacio() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoReturn expresionOVacio(Token tokenDeDatosReturn) throws ExcepcionLexica, ExcepcionSintactica {
         if (Arrays.asList("+", "-", "!", "null", "true", "false", "intLiteral", "charLiteral", "stringLiteral", "this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
+            NodoReturnExpresion nodoReturnExpresion = new NodoReturnExpresion(tokenDeDatosReturn,nodoExpresion);
+            return nodoReturnExpresion;
         } else {
-
+            NodoReturn nodoReturn = new NodoReturn(tokenDeDatosReturn);
+            return nodoReturn;
         }
     }
 
-    private void ifMetodo() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoIf ifMetodo() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatosIf = tokenActual;
         match("if");
         match("(");
-        expresion();
+        NodoExpresion nodoExpresion = expresion();
         match(")");
-        sentencia();
-        ifMetodoTransformado();
+        NodoSentencia nodoSentencia = sentencia();
+        return ifMetodoTransformado(tokenDeDatosIf, nodoExpresion, nodoSentencia);
     }
 
-    private void ifMetodoTransformado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoIf ifMetodoTransformado(Token tokenDeDatosIf, NodoExpresion nodoExpresion, NodoSentencia nodoSentenciaThen) throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("else")) {
             match("else");
-            sentencia();
+            NodoSentencia nodoSentenciaElse = sentencia();
+            NodoIfElse nodoIfElse = new NodoIfElse(tokenDeDatosIf, nodoExpresion, nodoSentenciaThen, nodoSentenciaElse);
+            return nodoIfElse;
         } else {
-
+            NodoIf nodoIf = new NodoIf(tokenDeDatosIf, nodoExpresion, nodoSentenciaThen);
+            return nodoIf;
         }
     }
 
-    private void forMetodo() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoFor forMetodo() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatosFor = tokenActual;
         match("for");
         match("(");
-        tipoClaseGenericidadOPrimitivo();
+        Tipo tipo = tipoClaseGenericidadOPrimitivo();
+        Token tokenDeDatos = tokenActual;
         match("idMetVar");
-        forOForEach();
+        NodoFor nodoFor = forOForEach(tokenDeDatosFor, tokenDeDatos, tipo);
         match(")");
-        sentencia();
+        NodoSentencia nodoSentencia = sentencia();
+        nodoFor.setSentencia(nodoSentencia);
+        return nodoFor;
     }
 
-    private void forOForEach() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoFor forOForEach(Token tokenDeDatosFor, Token tokenDeDatos, Tipo tipo) throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals(":")) {
             match(":");
             acceso();
+            return null;
         } else {
-            varLocalTransformado();
+            NodoVarLocal nodoVarLocal = varLocalTransformado(tokenDeDatos, tipo);
             match(";");
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
             match(";");
-            asignacion();
+            NodoAsignacion nodoAsignacion = asignacion();
+            return new NodoFor(tokenDeDatosFor, nodoVarLocal, nodoExpresion, nodoAsignacion);
         }
     }
 
-    private void expresion() throws ExcepcionSintactica, ExcepcionLexica {
+    private NodoExpresion expresion() throws ExcepcionSintactica, ExcepcionLexica {
         if (Arrays.asList("+", "-", "!", "null", "true", "false", "intLiteral", "charLiteral", "stringLiteral", "this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            expresionUnaria();
-            expresionTransformado();
+            NodoExpresion nodoExpresion = expresionUnaria();
+            return expresionTransformado(nodoExpresion);
         } else {
             throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar o (");
         }
     }
 
-    private void expresionTransformado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoExpresion expresionTransformado(NodoExpresion nodoExpresionIzquierda) throws ExcepcionLexica, ExcepcionSintactica {
         if (Arrays.asList("||", "&&", "==", "!=", "<", ">", "<=", ">=", "+", "-", "*", "/", "%").contains(tokenActual.getNombre())) {
-            operadorBinario();
-            expresionUnaria();
-            expresionTransformado();
+            Token operador = operadorBinario();
+            NodoExpresion nodoExpresionDerecha = expresionUnaria();
+            NodoExpBinaria nodoExpBinaria = new NodoExpBinaria(nodoExpresionIzquierda, nodoExpresionDerecha, operador);
+            return expresionTransformado(nodoExpBinaria);
         } else {
-
+            return nodoExpresionIzquierda;
         }
     }
 
-    private void operadorBinario() throws ExcepcionLexica, ExcepcionSintactica {
+    private Token operadorBinario() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatos = tokenActual;
         match(tokenActual.getNombre());
+        return tokenDeDatos;
     }
 
-    private void expresionUnaria() throws ExcepcionSintactica, ExcepcionLexica {
+    private NodoExpresion expresionUnaria() throws ExcepcionSintactica, ExcepcionLexica {
         if (Arrays.asList("+", "-", "!").contains(tokenActual.getNombre())) {
-            operadorUnario();
-            operando();
+            Token operador = operadorUnario();
+            NodoExpUnaria nodoExpUnaria = new NodoExpUnaria(operador);
+            NodoOperando nodoOperando = operando();
+            nodoExpUnaria.setOperando(nodoOperando);
+            return nodoExpUnaria;
         } else if (Arrays.asList("null", "true", "false", "intLiteral", "charLiteral", "stringLiteral", "this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            operando();
+            NodoOperando nodoOperando = operando();
+            return nodoOperando;
         } else {
             throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar o (");
         }
     }
 
-    private void operadorUnario() throws ExcepcionLexica, ExcepcionSintactica {
+    private Token operadorUnario() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatos = tokenActual;
         match(tokenActual.getNombre());
+        return tokenDeDatos;
     }
 
-    private void operando() throws ExcepcionSintactica, ExcepcionLexica {
+    private NodoOperando operando() throws ExcepcionSintactica, ExcepcionLexica {
         if (Arrays.asList("null", "true", "false", "intLiteral", "charLiteral", "stringLiteral").contains(tokenActual.getNombre())) {
-            literal();
+            return literal();
         } else if (Arrays.asList("this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            acceso();
+            NodoAcceso nodoAcceso = acceso();
+            return nodoAcceso;
         } else {
             throw new ExcepcionSintactica(tokenActual, "null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar o (");
         }
     }
 
-    private void literal() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoOperando literal() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatos = tokenActual;
         match(tokenActual.getNombre());
+        if(tokenDeDatos.getNombre().equals("null")){
+            return new NodoNull(tokenDeDatos);
+        } else if(tokenDeDatos.getNombre().equals("true")){
+            return new NodoTrue(tokenDeDatos);
+        } else if(tokenDeDatos.getNombre().equals("false")){
+            return new NodoFalse(tokenDeDatos);
+        } else if(tokenDeDatos.getNombre().equals("intLiteral")){
+            return new NodoInt(tokenDeDatos);
+        } else if(tokenDeDatos.getNombre().equals("charLiteral")){
+            return new NodoChar(tokenDeDatos);
+        } else {
+            return new NodoString(tokenDeDatos);
+        }
     }
 
-    private void acceso() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoAcceso acceso() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("this")) {
-            thisEncadenado();
+            return thisEncadenado();
         } else if (tokenActual.getNombre().equals("new")) {
-            constructorEncadenado();
+            return constructorEncadenado();
         } else if (tokenActual.getNombre().equals("idMetVar")) {
-            llamadaOVariableEncadenado();
+            return llamadaOVariableEncadenado();
         } else if (tokenActual.getNombre().equals("(")) {
             match("(");
-            expresionOCasting();
+            return expresionOCasting();
         } else {
             throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar o (");
         }
     }
 
-    private void expresionOCasting() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoAcceso expresionOCasting() throws ExcepcionLexica, ExcepcionSintactica {
         if (Arrays.asList("+", "-", "!", "null", "true", "false", "intLiteral", "charLiteral", "stringLiteral", "this", "new", "idMetVar", "(").contains(tokenActual.getNombre())) {
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
             match(")");
-            encadenado();
+            NodoEncadenado nodoEncadenado = encadenado();
+            NodoExpParentizada nodoExpParentizada = new NodoExpParentizada();
+            nodoExpParentizada.setExpresion(nodoExpresion);
+            nodoExpParentizada.setEncadenado(nodoEncadenado);
+            return nodoExpParentizada;
         } else if (tokenActual.getNombre().equals("idClase")) {
+            NodoCasting nodoCasting = new NodoCasting(tokenActual);
             tipoClaseGenericidad();
             match(")");
-            primario();
+            NodoPrimario nodoPrimario = primario();
+            nodoCasting.setPrimario(nodoPrimario);
+            return nodoCasting;
         } else {
             throw new ExcepcionSintactica(tokenActual, "+, -, !, null, true, false, intLiteral, charLiteral, stringLiteral, this, new, idMetVar, ( o idClase");
         }
     }
 
-    private void primario() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoPrimario primario() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("this")) {
-            thisEncadenado();
+            return thisEncadenado();
         } else if (tokenActual.getNombre().equals("new")) {
-            constructorEncadenado();
+            return constructorEncadenado();
         } else if (tokenActual.getNombre().equals("idMetVar")) {
-            llamadaOVariableEncadenado();
+            return llamadaOVariableEncadenado();
         } else if (tokenActual.getNombre().equals("(")) {
             match("(");
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
             match(")");
-            encadenado();
+            NodoEncadenado nodoEncadenado = encadenado();
+            NodoExpParentizada nodoExpParentizada = new NodoExpParentizada();
+            nodoExpParentizada.setExpresion(nodoExpresion);
+            nodoExpParentizada.setEncadenado(nodoEncadenado);
+            return nodoExpParentizada;
         } else {
             throw new ExcepcionSintactica(tokenActual, "this, new, idMetVar o (");
         }
     }
 
-    private void argsActualesOVacioEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoPrimario argsActualesOVacioEncadenado(Token tokenDeDatos) throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("(")) {
+            NodoLlamadaMetodo nodoLlamadaMetodo = new NodoLlamadaMetodo(tokenDeDatos);
+            TablaDeSimbolos.pushNodoConArgsActual(nodoLlamadaMetodo);
             argsActuales();
-            encadenado();
+            NodoEncadenado nodoEncadenado = encadenado();
+            nodoLlamadaMetodo.setEncadenado(nodoEncadenado);
+            return nodoLlamadaMetodo;
         } else if (tokenActual.getNombre().equals(".")) {
-            encadenado();
+            NodoVar nodoVar = new NodoVar(tokenDeDatos);
+            NodoEncadenado nodoEncadenado = encadenado();
+            nodoVar.setEncadenado(nodoEncadenado);
+            return nodoVar;
         } else {
-
+            NodoVar nodoVar = new NodoVar(tokenDeDatos);
+            return nodoVar;
         }
     }
 
-    private void thisEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoThis thisEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatos = tokenActual;
         match("this");
-        encadenado();
+        NodoThis nodoThis = new NodoThis(tokenDeDatos);
+        NodoEncadenado nodoEncadenado = encadenado();
+        nodoThis.setEncadenado(nodoEncadenado);
+        return nodoThis;
     }
 
-    private void constructorEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoConstructor constructorEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
         match("new");
+        Token tokenDeDatos = tokenActual;
         match("idClase");
+        NodoConstructor nodoConstructor = new NodoConstructor(tokenDeDatos);
+        TablaDeSimbolos.pushNodoConArgsActual(nodoConstructor);
         genericidadONotacionDiamante();
         argsActuales();
-        encadenado();
+        NodoEncadenado nodoEncadenado = encadenado();
+        nodoConstructor.setEncadenado(nodoEncadenado);
+        TablaDeSimbolos.popNodoConArgsActual();
+        return nodoConstructor;
     }
 
-    private void llamadaOVariableEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoPrimario llamadaOVariableEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+        Token tokenDeDatos = tokenActual;
         match("idMetVar");
-        argsActualesOVacioEncadenado();
+        return argsActualesOVacioEncadenado(tokenDeDatos);
     }
 
     private void argsActuales() throws ExcepcionLexica, ExcepcionSintactica {
@@ -644,7 +766,8 @@ public class AnalizadorSintactico {
     }
 
     private void listaExps() throws ExcepcionSintactica, ExcepcionLexica {
-        expresion();
+        NodoExpresion nodoExpresion = expresion();
+        TablaDeSimbolos.getTopeNodosConArgsActual().insertarArgActual(nodoExpresion);
         listaExpsTransformado();
     }
 
@@ -657,26 +780,33 @@ public class AnalizadorSintactico {
         }
     }
 
-    private void encadenado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoEncadenado encadenado() throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals(".")) {
-            varOMetodoEncadenado();
-            encadenado();
+            NodoEncadenado nodoEncadenado = varOMetodoEncadenado();
+            nodoEncadenado.setEncadenado(encadenado());
+            return nodoEncadenado;
         } else {
-
+            return null;
         }
     }
 
-    private void varOMetodoEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoEncadenado varOMetodoEncadenado() throws ExcepcionLexica, ExcepcionSintactica {
         match(".");
+        Token tokenDeDatos = tokenActual;
         match("idMetVar");
-        varOMetodoEncadenadoTransformado();
+        return varOMetodoEncadenadoTransformado(tokenDeDatos);
     }
 
-    private void varOMetodoEncadenadoTransformado() throws ExcepcionLexica, ExcepcionSintactica {
+    private NodoEncadenado varOMetodoEncadenadoTransformado(Token tokenDeDatos) throws ExcepcionLexica, ExcepcionSintactica {
         if (tokenActual.getNombre().equals("(")) {
+            NodoLlamadaEncadenada nodoLlamadaEncadenada = new NodoLlamadaEncadenada(tokenDeDatos);
+            TablaDeSimbolos.pushNodoConArgsActual(nodoLlamadaEncadenada);
             argsActuales();
+            TablaDeSimbolos.popNodoConArgsActual();
+            return nodoLlamadaEncadenada;
         } else {
-
+            NodoVarEncadenada nodoVarEncadenada = new NodoVarEncadenada(tokenDeDatos);
+            return nodoVarEncadenada;
         }
     }
 }

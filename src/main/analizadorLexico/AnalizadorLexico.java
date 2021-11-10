@@ -51,6 +51,10 @@ public class AnalizadorLexico {
         lexema = lexema + caracterActual;
     }
 
+    public void agregarComillasDoblesAlLexema(){
+        lexema = lexema + "\"";
+    }
+
     private void actualizarCaracterActual() {
         caracterActual = procesadorDeArchivo.proximoCaracter();
     }
@@ -561,8 +565,11 @@ public class AnalizadorLexico {
         if (caracterActual == '"') {
             actualizarCaracterActual();
             return e47();
-        } else {
+        } else if(procesadorDeArchivo.esEOF(caracterActual)){
             throw new ExcepcionLexica(lexema, nroLineaInicioBloqueDeTexto, nroColumnaDondeIniciaElLexema, procesadorDeArchivo.getLineaActual(), "el literal String como bloque de texto no se cerró");
+        } else {
+            agregarComillasDoblesAlLexema();
+            return e44();
         }
     }
 
@@ -570,8 +577,12 @@ public class AnalizadorLexico {
         if (caracterActual == '"') {
             actualizarCaracterActual();
             return e48();
-        } else {
+        } else if(procesadorDeArchivo.esEOF(caracterActual)){
             throw new ExcepcionLexica(lexema, nroLineaInicioBloqueDeTexto, nroColumnaDondeIniciaElLexema, procesadorDeArchivo.getLineaActual(), "el literal String como bloque de texto no se cerró");
+        } else {
+            agregarComillasDoblesAlLexema();
+            agregarComillasDoblesAlLexema();
+            return e44();
         }
     }
 
