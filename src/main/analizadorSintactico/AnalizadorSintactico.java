@@ -76,7 +76,7 @@ public class AnalizadorSintactico {
         match("}");
         if(TablaDeSimbolos.existeClase(tokenDeClase.getLexema()) == null) {
             if(clase.getConstructor() == null){
-                Unidad constructorPorDefecto = new Constructor(new Token("idClase", clase.getTokenDeDatos().getLexema(),0));
+                Unidad constructorPorDefecto = new Constructor(new Token("idClase", clase.getTokenDeDatos().getLexema(),0), clase.getTokenDeDatos().getLexema());
                 constructorPorDefecto.setBloque(new NodoBloque());
                 clase.insertarConstructor(constructorPorDefecto);
             }
@@ -163,9 +163,13 @@ public class AnalizadorSintactico {
             if(tokenDeDatos.getLexema().equals("main") && metodo.getForma() == "static" && (metodo.getParametros().size() == 0) && metodo.getTipo().getTokenDeDatos().getLexema().equals("void")){
                 if(TablaDeSimbolos.getSeEncontroMain())
                     throw new ExcepcionSemantica(tokenDeDatos, "Ya existe una clase que tiene el metodo main");
-                else
+                else {
                     TablaDeSimbolos.setSeEncontroMain(true);
+                    TablaDeSimbolos.setNombreDeClaseConMain(TablaDeSimbolos.getClaseActual().getTokenDeDatos().getLexema());
+                }
             }
+            if(metodo.getForma().equals("dynamic"))
+                TablaDeSimbolos.getClaseActual().setTieneMetodosDinamicos(true);
             TablaDeSimbolos.getClaseActual().insertarMetodo(metodo);
         }
         else
@@ -176,7 +180,7 @@ public class AnalizadorSintactico {
     private void constructor(Tipo tipo) throws ExcepcionLexica, ExcepcionSintactica, ExcepcionSemantica {
         if(!TablaDeSimbolos.getClaseActual().getTokenDeDatos().getLexema().equals(tipo.getTokenDeDatos().getLexema()))
             throw new ExcepcionSemantica(tipo.getTokenDeDatos(), "El nombre del constructor debe coincidir con el de la clase en la cual es declarado.");
-        Unidad constructor = new Constructor(tipo.getTokenDeDatos());
+        Unidad constructor = new Constructor(tipo.getTokenDeDatos(), TablaDeSimbolos.getClaseActual().getTokenDeDatos().getLexema());
         if(TablaDeSimbolos.getClaseActual().getConstructor() != null)
             throw new ExcepcionSemantica(tipo.getTokenDeDatos(), "Ya existe un constructor para esta clase.");
         TablaDeSimbolos.getClaseActual().insertarConstructor(constructor);

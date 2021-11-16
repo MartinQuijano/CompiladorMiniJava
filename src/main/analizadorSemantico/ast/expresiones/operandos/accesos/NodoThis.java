@@ -36,6 +36,14 @@ public class NodoThis extends NodoPrimario{
             return nodoEncadenado.esVariable();
     }
 
+    public void generarCodigo() {
+        //TODO
+    }
+
+    public boolean tieneValorDeRetorno() {
+        return false;
+    }
+
     public void imprimir(){
         System.out.print("this");
         if(nodoEncadenado != null) {

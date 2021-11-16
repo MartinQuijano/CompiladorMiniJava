@@ -9,6 +9,8 @@ import main.analizadorSemantico.tablaDeSimbolos.unidades.Unidad;
 import main.analizadorSemantico.tablaDeSimbolos.variables.Atributo;
 import main.analizadorSemantico.tablaDeSimbolos.variables.Parametro;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Clase {
@@ -22,7 +24,14 @@ public class Clase {
     private HashMap<String, Atributo> atributos;
     private HashMap<String, Metodo> metodos;
 
-    public Clase(Token tokenDeDatos){
+    private boolean tieneMetodosDinamicos;
+    private int ultimoOffsetVT;
+    private int ultimoOffsetAtributo;
+    private ArrayList<Metodo> metodosEnOrdenParaOffset;
+    private ArrayList<Atributo> atributosEnOrdenParaOffset;
+    private boolean codigoGenerado;
+
+    public Clase(Token tokenDeDatos) {
         this.tokenDeDatos = tokenDeDatos;
         atributos = new HashMap<String, Atributo>();
         metodos = new HashMap<String, Metodo>();
@@ -30,114 +39,236 @@ public class Clase {
         consolidada = false;
         constructor = null;
         tipo = new TipoReferencia(tokenDeDatos);
+        tieneMetodosDinamicos = false;
+        ultimoOffsetVT = 0;
+        ultimoOffsetAtributo = 1;
+        metodosEnOrdenParaOffset = new ArrayList<>();
+        atributosEnOrdenParaOffset = new ArrayList<>();
+        codigoGenerado = false;
     }
 
-    public Tipo getTipo(){
+    public Tipo getTipo() {
         return tipo;
     }
 
-    public void heredaDe(Token clasePadre){
+    public void heredaDe(Token clasePadre) {
         heredaDe = clasePadre;
     }
 
-    public Token getHeredaDe(){
+    public Token getHeredaDe() {
         return heredaDe;
     }
 
-    public Token getTokenDeDatos(){
+    public Token getTokenDeDatos() {
         return tokenDeDatos;
     }
 
-    public Atributo existeAtributo(String nombreDeAtributo){
-        if(atributos.containsKey(nombreDeAtributo))
+    public void setCodigoGenerado(boolean value){
+        codigoGenerado = value;
+    }
+
+    public void generarCodigo() {
+        //TODO: de momento ignoro la generacion de object
+        if (!tokenDeDatos.getLexema().equals("Object")) {
+            Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
+            if (claseAncestro != null)
+                if (!claseAncestro.yaGeneroCodigo())
+                    claseAncestro.generarCodigo();
+            generarData();
+            generarCode();
+
+            codigoGenerado = true;
+        }
+    }
+
+    private void generarCode() {
+        TablaDeSimbolos.insertarInstruccion(".CODE");
+
+        constructor.generarCodigo();
+        for (Metodo metodo : metodos.values()) {
+            if (!metodo.yaGeneroCodigo()) {
+                metodo.generarCodigo();
+            }
+        }
+
+
+        TablaDeSimbolos.insertarInstruccion("");
+    }
+
+    private void generarData() {
+        TablaDeSimbolos.insertarInstruccion(".DATA");
+        String virtualTableDW = "VT_" + tokenDeDatos.getLexema() + ":";
+        if (tieneMetodosDinamicos) {
+            virtualTableDW += " DW ";
+            virtualTableDW = generarDWDeLosMetodosDeLosAncestros(virtualTableDW);
+            for (Metodo metodo : metodos.values()) {
+                if (metodo.getForma().equals("dynamic")) {
+                    if (!metodo.seLeAsignoOffset()) {
+                        metodo.setOffset(ultimoOffsetVT);
+                        ultimoOffsetVT++;
+                        metodosEnOrdenParaOffset.add(metodo);
+                        virtualTableDW += "l" + metodo.getTokenDeDatos().getLexema() + "_" + tokenDeDatos.getLexema() + ", ";
+                    }
+                }
+            }
+            virtualTableDW = virtualTableDW.substring(0, virtualTableDW.length() - 2);
+        }
+        else{
+            virtualTableDW += " NOP";
+        }
+        TablaDeSimbolos.insertarInstruccion(virtualTableDW);
+        TablaDeSimbolos.insertarInstruccion("");
+    }
+
+    public ArrayList<Metodo> getMetodosEnOrdenParaOffset() {
+        return metodosEnOrdenParaOffset;
+    }
+
+    public ArrayList<Atributo> getAtributosEnOrdenParaOffset() {
+        return atributosEnOrdenParaOffset;
+    }
+
+    private String generarDWDeLosMetodosDeLosAncestros(String virtualTableDW) {
+        Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
+        for (Metodo metodo : claseAncestro.getMetodosEnOrdenParaOffset()) {
+            Metodo metodoYaExistente = existeMetodo(metodo.getTokenDeDatos().getLexema());
+
+            boolean noEsUnMetodoDeLaMismaClase = (!metodo.getDeclaradoEnClase().equals(metodoYaExistente.getDeclaradoEnClase()));
+
+            if (noEsUnMetodoDeLaMismaClase) {
+                metodoYaExistente.setOffset(ultimoOffsetVT);
+                ultimoOffsetVT++;
+                metodoYaExistente.setSeLeAsignoOffset(true);
+                metodosEnOrdenParaOffset.add(metodoYaExistente);
+                virtualTableDW += "l" + metodoYaExistente.getTokenDeDatos().getLexema() + "_" + metodoYaExistente.getDeclaradoEnClase() + ", ";
+            } else {
+                metodoYaExistente.setOffset(ultimoOffsetVT);
+                metodoYaExistente.setSeLeAsignoOffset(true);
+                metodosEnOrdenParaOffset.add(metodo);
+                ultimoOffsetVT++;
+                virtualTableDW += "l" + metodoYaExistente.getTokenDeDatos().getLexema() + "_" + metodo.getDeclaradoEnClase() + ", ";
+            }
+        }
+        return virtualTableDW;
+    }
+
+    public boolean yaGeneroCodigo() {
+        return codigoGenerado;
+    }
+
+    public Atributo existeAtributo(String nombreDeAtributo) {
+        if (atributos.containsKey(nombreDeAtributo))
             return atributos.get(nombreDeAtributo);
         else
             return null;
     }
 
-    public Metodo existeMetodo(String nombreDeMetodo){
-        if(metodos.containsKey(nombreDeMetodo))
+    public Metodo existeMetodo(String nombreDeMetodo) {
+        if (metodos.containsKey(nombreDeMetodo))
             return metodos.get(nombreDeMetodo);
         else
             return null;
     }
 
-    public void insertarAtributo(Atributo atributoAInsertar){
+    public void insertarAtributo(Atributo atributoAInsertar) {
         atributos.put(atributoAInsertar.getTokenDeDatos().getLexema(), atributoAInsertar);
     }
 
-    public void insertarAtributoDeAncestro(Atributo atributoAInsertar, String nombreAncestro){
+    public void insertarAtributoDeAncestro(Atributo atributoAInsertar, String nombreAncestro) {
         atributos.put(nombreAncestro + "." + atributoAInsertar.getTokenDeDatos().getLexema(), atributoAInsertar);
     }
 
-    public void insertarConstructor(Unidad constructor){
+    public void insertarConstructor(Unidad constructor) {
         this.constructor = constructor;
     }
 
-    public void insertarMetodo(Metodo metodoAInsertar){
+    public void setTieneMetodosDinamicos(boolean value) {
+        tieneMetodosDinamicos = value;
+    }
+
+    public void insertarMetodo(Metodo metodoAInsertar) {
         metodos.put(metodoAInsertar.getTokenDeDatos().getLexema(), metodoAInsertar);
     }
 
-    public HashMap<String, Atributo> getAtributos(){
+    public HashMap<String, Atributo> getAtributos() {
         return atributos;
     }
 
-    public Unidad getConstructor(){
+    public Unidad getConstructor() {
         return constructor;
     }
 
-    public HashMap<String, Metodo> getMetodos(){
+    public HashMap<String, Metodo> getMetodos() {
         return metodos;
     }
 
     public void estaBienDeclarada() throws ExcepcionSemantica {
-        if(TablaDeSimbolos.existeClase(heredaDe.getLexema()) == null)
+        if (TablaDeSimbolos.existeClase(heredaDe.getLexema()) == null)
             throw new ExcepcionSemantica(heredaDe, "La clase '" + heredaDe.getLexema() + "' de la que intenta heredar '" + tokenDeDatos.getLexema() + "' no esta declarada.");
         comprobarHerenciaCircular();
-        for(Atributo atributo : atributos.values()){
+        for (Atributo atributo : atributos.values()) {
             atributo.estaBienDeclarado();
         }
-        if(constructor != null)
+        if (constructor != null)
             constructor.estaBienDeclarada();
-        for(Metodo metodo : metodos.values()){
+        for (Metodo metodo : metodos.values()) {
             metodo.estaBienDeclarada();
         }
     }
 
     public void comprobarHerenciaCircular() throws ExcepcionSemantica {
         Clase ancestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
-        while (!ancestro.getTokenDeDatos().getLexema().equals("Object")){
-            if(ancestro.getTokenDeDatos().getLexema().equals(tokenDeDatos.getLexema()))
+        while (!ancestro.getTokenDeDatos().getLexema().equals("Object")) {
+            if (ancestro.getTokenDeDatos().getLexema().equals(tokenDeDatos.getLexema()))
                 throw new ExcepcionSemantica(tokenDeDatos, "Un ancestro de la clase '" + tokenDeDatos.getLexema() + "' hereda de la misma, provocando una herencia circular.");
             ancestro = TablaDeSimbolos.existeClase(ancestro.getHeredaDe().getLexema());
         }
     }
 
-    public boolean estaConsolidada(){
+    public boolean estaConsolidada() {
         return consolidada;
     }
 
-    public void setConsolidacion(boolean value){
+    public void setConsolidacion(boolean value) {
         consolidada = value;
     }
 
     public void consolidar() throws ExcepcionSemantica {
         Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
-        if(!claseAncestro.estaConsolidada())
+        if (!claseAncestro.estaConsolidada())
             claseAncestro.consolidar();
         consolidarAtributos();
         consolidarMetodos();
         consolidada = true;
+        establecerOffsetDeLosAtributos();
+
     }
 
-    private void consolidarAtributos(){
+    private void establecerOffsetDeLosAtributos() {
+        //TODO: para offset de los atributos
         Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
-        for(Atributo atributo : claseAncestro.getAtributos().values()){
+        for (Atributo atributo : claseAncestro.atributosEnOrdenParaOffset) {
+            ultimoOffsetAtributo++;
+            atributosEnOrdenParaOffset.add(atributo);
+        }
+        for (Atributo atributo : atributos.values()) {
+            if (!atributo.seLeAsignoOffset()) {
+                atributo.setOffset(ultimoOffsetAtributo);
+                ultimoOffsetAtributo++;
+                atributosEnOrdenParaOffset.add(atributo);
+                atributo.setSeLeAsignoOffset(true);
+            }
+        }
+    }
+
+    private void consolidarAtributos() {
+        Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
+        for (Atributo atributo : claseAncestro.getAtributos().values()) {
             Atributo atributoYaExistente = existeAtributo(atributo.getTokenDeDatos().getLexema());
-            if(atributoYaExistente != null)
+            if (atributoYaExistente != null)
                 insertarAtributoDeAncestro(atributo, claseAncestro.getTokenDeDatos().getLexema());
-            else{
-                if(atributo.getVisibilidad().equals("private"))
+            else {
+                if (atributo.getVisibilidad().equals("private"))
                     insertarAtributoDeAncestroPrivado(atributo, claseAncestro.getTokenDeDatos().getLexema());
                 else
                     insertarAtributo(atributo);
@@ -151,36 +282,39 @@ public class Clase {
 
     private void consolidarMetodos() throws ExcepcionSemantica {
         Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
-        for(Metodo metodo : claseAncestro.getMetodos().values()){
+        for (Metodo metodo : claseAncestro.getMetodos().values()) {
             Metodo metodoYaExistente = existeMetodo(metodo.getTokenDeDatos().getLexema());
-            if(metodoYaExistente != null){
-                if(!tienenMismaSignatura(metodoYaExistente, metodo)){
+            if (metodoYaExistente != null) {
+                if (!tienenMismaSignatura(metodoYaExistente, metodo)) {
                     throw new ExcepcionSemantica(metodoYaExistente.getTokenDeDatos(), "El metodo '" + metodoYaExistente.getTokenDeDatos().getLexema() + "' ya esta declarado en una clase ancestro y las signaturas no coinciden.");
                 }
             } else {
+                if (metodo.getForma().equals("dynamic")) {
+                    tieneMetodosDinamicos = true;
+                }
                 insertarMetodo(metodo);
             }
         }
     }
 
-    private boolean tienenMismaSignatura(Metodo metodoDeLaClase, Metodo metodoDeAncestro){
-        if(!metodoDeLaClase.getForma().equals(metodoDeAncestro.getForma()))
+    private boolean tienenMismaSignatura(Metodo metodoDeLaClase, Metodo metodoDeAncestro) {
+        if (!metodoDeLaClase.getForma().equals(metodoDeAncestro.getForma()))
             return false;
-        if(!metodoDeLaClase.getTipo().getTokenDeDatos().getLexema().equals(metodoDeAncestro.getTipo().getTokenDeDatos().getLexema()))
+        if (!metodoDeLaClase.getTipo().getTokenDeDatos().getLexema().equals(metodoDeAncestro.getTipo().getTokenDeDatos().getLexema()))
             return false;
-        if(metodoDeLaClase.getParametros().size() != metodoDeAncestro.getParametros().size())
+        if (metodoDeLaClase.getParametros().size() != metodoDeAncestro.getParametros().size())
             return false;
         int indiceParametros = 0;
-        for(Parametro parametro : metodoDeLaClase.getParametros()){
-            if(!coincidenLosParametros(parametro, metodoDeAncestro.getParametros().get(indiceParametros)))
+        for (Parametro parametro : metodoDeLaClase.getParametros()) {
+            if (!coincidenLosParametros(parametro, metodoDeAncestro.getParametros().get(indiceParametros)))
                 return false;
             indiceParametros++;
         }
         return true;
     }
 
-    private boolean coincidenLosParametros(Parametro parametroClase, Parametro parametroAncestro){
-        if(!parametroClase.getTipo().getTokenDeDatos().getLexema().equals(parametroAncestro.getTipo().getTokenDeDatos().getLexema()))
+    private boolean coincidenLosParametros(Parametro parametroClase, Parametro parametroAncestro) {
+        if (!parametroClase.getTipo().getTokenDeDatos().getLexema().equals(parametroAncestro.getTipo().getTokenDeDatos().getLexema()))
             return false;
         return true;
     }

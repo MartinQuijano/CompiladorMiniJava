@@ -3,6 +3,7 @@ package main.analizadorSemantico.ast.expresiones;
 import main.analizadorLexico.Token;
 import main.analizadorSemantico.ast.expresiones.operandos.NodoOperando;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
+import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.TipoBoolean;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.TipoEntero;
@@ -39,4 +40,14 @@ public class NodoExpUnaria extends NodoExpresion{
         System.out.print(operador.getLexema());
         operando.imprimir();
     }
+
+    public void generarCodigo() {
+        operando.generarCodigo();
+        if(operador.getLexema().equals("-")) {
+            TablaDeSimbolos.insertarInstruccion("NEG");
+        } else if (operador.getLexema().equals("!")){
+            TablaDeSimbolos.insertarInstruccion("NOT");
+        }
+    }
+
 }

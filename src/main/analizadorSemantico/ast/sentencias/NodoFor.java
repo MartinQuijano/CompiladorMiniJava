@@ -36,6 +36,10 @@ public class NodoFor extends NodoSentencia {
         TablaDeSimbolos.getUnidadActual().eliminarVarLocal(new VarLocal(varLocal.getTokenDeDatos(), varLocal.getTipo()));
     }
 
+    public void generarCodigo() {
+        //TODO
+    }
+
     private boolean esExpresionBoolean() throws ExcepcionSemantica {
         Tipo tipoExpresion = expresion.chequear();
         if(tipoExpresion.getTokenDeDatos().getLexema().equals("boolean"))

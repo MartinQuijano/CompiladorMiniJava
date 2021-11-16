@@ -11,6 +11,8 @@ import main.analizadorSemantico.tablaDeSimbolos.unidades.Unidad;
 import java.util.ArrayList;
 
 public class NodoLlamadaEncadenada extends NodoEncadenado implements NodoConArgs {
+
+    protected Unidad entradaMetodo;
     protected ArrayList<NodoExpresion> argumentosActuales;
 
     public NodoLlamadaEncadenada(Token tokenDeDatos){
@@ -36,6 +38,7 @@ public class NodoLlamadaEncadenada extends NodoEncadenado implements NodoConArgs
         }
         chequearSiCoincidenLosTiposDeLosArgumentos(metodoEnClaseActual);
         Tipo tipoMetodoLlamado = TablaDeSimbolos.existeClase(tipo.getTokenDeDatos().getLexema()).existeMetodo(tokenDeDatos.getLexema()).getTipo();
+        entradaMetodo = metodoEnClaseActual;
         if(nodoEncadenado != null)
             return nodoEncadenado.chequear(tipoMetodoLlamado);
         else
@@ -54,6 +57,31 @@ public class NodoLlamadaEncadenada extends NodoEncadenado implements NodoConArgs
             return false;
         else
             return nodoEncadenado.esVariable();
+    }
+
+    public void generarCodigo() {
+        //TODO: diferencia con NodoLlamadaMetodo es que no tengo el load al ppio del dinamico?
+        // pq ya lo traigo del encadenado?
+        if(entradaMetodo.esDinamica()) {
+            if(!entradaMetodo.getTipo().getTokenDeDatos().getLexema().equals("void")){
+                TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo lugar para el retorno");
+                TablaDeSimbolos.insertarInstruccion("SWAP");
+            }
+            for (NodoExpresion expresion : argumentosActuales) {
+                expresion.generarCodigo();
+                TablaDeSimbolos.insertarInstruccion("SWAP");
+            }
+            TablaDeSimbolos.insertarInstruccion("DUP        ; duplico el this para no perderlo");
+            TablaDeSimbolos.insertarInstruccion("LOADREF 0        ; cargo la VT");
+            TablaDeSimbolos.insertarInstruccion("LOADREF " + entradaMetodo.getOffset() + "        ; cargo la direccion del metodo");
+            TablaDeSimbolos.insertarInstruccion("CALL        ; llamo al metodo");
+        } else {//TODO: ESTO ES ASI SI ES ESTATICO!
+            for (NodoExpresion expresion : argumentosActuales) {
+                expresion.generarCodigo();
+            }
+            TablaDeSimbolos.insertarInstruccion("PUSH l" + tokenDeDatos.getLexema() + "_" + entradaMetodo.getDeclaradoEnClase());
+            TablaDeSimbolos.insertarInstruccion("CALL");
+        }
     }
 
     protected void chequearSiCoincidenLosTiposDeLosArgumentos(Unidad unidadEnClaseActual) throws ExcepcionSemantica {

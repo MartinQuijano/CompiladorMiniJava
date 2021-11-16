@@ -13,4 +13,8 @@ public class NodoString extends NodoOperando {
     public Tipo chequear() {
         return tipo;
     }
+
+    public void generarCodigo() {
+        //TODO: ver como se hace
+    }
 }

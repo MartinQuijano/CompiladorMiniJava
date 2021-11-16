@@ -5,6 +5,10 @@ public class NodoSentenciaVacia extends NodoSentencia {
 
     }
 
+    public void generarCodigo() {
+
+    }
+
     public void imprimir() {
 
     }

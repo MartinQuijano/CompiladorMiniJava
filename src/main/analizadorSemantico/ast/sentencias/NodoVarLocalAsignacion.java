@@ -2,7 +2,6 @@ package main.analizadorSemantico.ast.sentencias;
 
 import main.analizadorLexico.Token;
 import main.analizadorSemantico.ast.expresiones.NodoExpresion;
-import main.analizadorSemantico.ast.sentencias.NodoVarLocal;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
 import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
@@ -12,6 +11,7 @@ public class NodoVarLocalAsignacion extends NodoVarLocal {
 
     protected NodoExpresion nodoExpresion;
     protected Token tokenDeOperador;
+    protected VarLocal entradaVarLocal;
 
     public NodoVarLocalAsignacion(Token tokenDeDatos, Token tokenDeOperador, Tipo tipo, NodoExpresion nodoExpresion) {
         super(tokenDeDatos, tipo);
@@ -32,8 +32,17 @@ public class NodoVarLocalAsignacion extends NodoVarLocal {
             throw new ExcepcionSemantica(tokenDeOperador, "El tipo de la expresion no conforma con el tipo del acceso.");
         }
         VarLocal varLocal = new VarLocal(tokenDeDatos, tipo);
+        entradaVarLocal = varLocal;
         TablaDeSimbolos.getUnidadActual().insertarVarLocal(varLocal);
         TablaDeSimbolos.getBloques().peek().insertarVarLocal(varLocal);
+    }
+
+    public void generarCodigo() {
+        TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo memoria para la variable local");
+        nodoExpresion.generarCodigo();
+        TablaDeSimbolos.insertarInstruccion("STORE " + entradaVarLocal.getOffset() + "        ; guardo en la var local con el offset indicado el valor del tope de la pila");
+
+        TablaDeSimbolos.getBloques().peek().incrementarMemoriaALiberar();
     }
 
     public void imprimir(){

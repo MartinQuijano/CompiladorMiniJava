@@ -23,6 +23,10 @@ public class NodoIf extends NodoSentencia {
             sentenciaThen.chequear();
     }
 
+    public void generarCodigo() {
+        //TODO
+    }
+
     private boolean esCondicionBoolean() throws ExcepcionSemantica {
         Tipo tipoCondicion = condicion.chequear();
         if(tipoCondicion.getTokenDeDatos().getLexema().equals("boolean"))

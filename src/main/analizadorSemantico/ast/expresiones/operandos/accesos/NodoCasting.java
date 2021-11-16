@@ -42,4 +42,12 @@ public class NodoCasting extends NodoAcceso{
     public boolean esVariable() {
         return nodoPrimario.esLlamada();
     }
+
+    public void generarCodigo() {
+        //TODO
+    }
+
+    public boolean tieneValorDeRetorno() {
+        return false;
+    }
 }

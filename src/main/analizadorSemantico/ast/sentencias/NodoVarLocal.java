@@ -28,6 +28,11 @@ public class NodoVarLocal extends NodoSentencia {
         TablaDeSimbolos.getBloques().peek().insertarVarLocal(varLocal);
     }
 
+    public void generarCodigo() {
+        TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo memoria para la variable local");
+        TablaDeSimbolos.getBloques().peek().incrementarMemoriaALiberar();
+    }
+
     public Token getTokenDeDatos(){
         return tokenDeDatos;
     }

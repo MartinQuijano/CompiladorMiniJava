@@ -20,4 +20,6 @@ public abstract class NodoEncadenado {
     public abstract boolean esLlamada();
 
     public abstract boolean esVariable();
+
+    public abstract void generarCodigo();
 }

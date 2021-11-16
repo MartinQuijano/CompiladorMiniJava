@@ -1,6 +1,7 @@
 package main.analizadorSemantico.ast.expresiones.operandos;
 
 import main.analizadorLexico.Token;
+import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.TipoNull;
 
@@ -12,5 +13,9 @@ public class NodoNull extends NodoOperando {
 
     public Tipo chequear() {
         return tipo;
+    }
+
+    public void generarCodigo() {
+        TablaDeSimbolos.insertarInstruccion("PUSH " + 0);
     }
 }

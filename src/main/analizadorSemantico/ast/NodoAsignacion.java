@@ -17,6 +17,7 @@ public class NodoAsignacion extends NodoSentencia {
 
     public void chequear() throws ExcepcionSemantica {
         Tipo tipoAcceso = nodoAcceso.chequear();
+        nodoAcceso.setEsLadoIzqAsignacion(true);
         if(!nodoAcceso.esVariable()){
             throw new ExcepcionSemantica(nodoTipoAsignacion.getSimbolo(), "El lado izquierdo de la asignacion debe ser asignable. Debe ser una variable o un encadenado que termina en una variable.");
         }
@@ -27,6 +28,11 @@ public class NodoAsignacion extends NodoSentencia {
         } else if(nodoTipoAsignacion.getSimbolo().getLexema().equals("++") || nodoTipoAsignacion.getSimbolo().getLexema().equals("--")){
             tipoAcceso.conforma(new TipoEntero());
         }
+    }
+
+    public void generarCodigo() {
+        nodoTipoAsignacion.getExpresion().generarCodigo();
+        nodoAcceso.generarCodigo();
     }
 
     public void imprimir() {

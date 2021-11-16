@@ -4,6 +4,8 @@ import main.analizadorLexico.Token;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
 import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 
+import java.util.Stack;
+
 public class NodoReturn extends NodoSentencia {
 
     public NodoReturn(Token tokenDeDatos){
@@ -13,6 +15,16 @@ public class NodoReturn extends NodoSentencia {
     public void chequear() throws ExcepcionSemantica {
         if(!TablaDeSimbolos.getUnidadActual().getTipo().getTokenDeDatos().getLexema().equals("void"))
             throw new ExcepcionSemantica(tokenDeDatos, "El tipo de retorno del metodo debe ser void.");
+    }
+
+    public void generarCodigo() {
+        TablaDeSimbolos.insertarInstruccion("FMEM " + TablaDeSimbolos.getUnidadActual().getMemoriaReservada());
+        TablaDeSimbolos.insertarInstruccion("STOREFP");
+        //TODO: refactor en servicio de unidad.
+        if (TablaDeSimbolos.getUnidadActual().esDinamica())
+            TablaDeSimbolos.insertarInstruccion("RET " + (TablaDeSimbolos.getUnidadActual().getParametros().size() + 1));
+        else
+            TablaDeSimbolos.insertarInstruccion("RET " + TablaDeSimbolos.getUnidadActual().getParametros().size());
     }
 
     public void setTokenDeDatos(Token tokenDeDatos){

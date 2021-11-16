@@ -9,6 +9,8 @@ import main.analizadorSintactico.excepciones.ExcepcionSintactica;
 import main.manejadorDeArchivos.ProcesadorDeArchivo;
 import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 
+import java.io.File;
+
 public class Main {
 
     private static void print_token(Token token) {
@@ -19,9 +21,11 @@ public class Main {
 
     public static void main(String args[]) {
 
-        ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo(args[0]);
-        //ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\test.java");
+        //ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo(args[0]);
+        ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\test.java");
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(procesadorDeArchivo);
+    //    File archivoDeSalida = new File("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\" + args[1]);
+        File archivoDeSalida = new File("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\output.txt");
 
         TablaDeSimbolos tablaDeSimbolos = TablaDeSimbolos.getInstance();
 
@@ -32,6 +36,8 @@ public class Main {
             TablaDeSimbolos.consolidar();
             //TablaDeSimbolos.mostrarTabla();
             TablaDeSimbolos.chequearSentencias();
+            TablaDeSimbolos.generarCodigo();
+            TablaDeSimbolos.escribirCodigoEnArchivo(archivoDeSalida);
             System.out.println("Compilación exitosa");
             System.out.println();
             System.out.println("[SinErrores]");

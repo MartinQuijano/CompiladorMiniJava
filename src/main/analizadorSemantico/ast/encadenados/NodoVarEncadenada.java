@@ -35,6 +35,10 @@ public class NodoVarEncadenada extends NodoEncadenado {
             return nodoEncadenado.esVariable();
     }
 
+    public void generarCodigo() {
+        //TODO
+    }
+
     public Tipo chequear(Tipo tipo) throws ExcepcionSemantica {
         Variable variable = null;
         if (tipo.esTipoClase())

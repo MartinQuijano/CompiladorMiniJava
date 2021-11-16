@@ -11,9 +11,12 @@ public class NodoBloque extends NodoSentencia {
     protected ArrayList<NodoSentencia> sentencias;
     protected ArrayList<VarLocal> varLocalesInsertadasABorrar;
 
+    protected int memoriaALiberar;
+
     public NodoBloque(){
         sentencias = new ArrayList<>();
         varLocalesInsertadasABorrar = new ArrayList<>();
+        memoriaALiberar = 0;
     }
 
     public void insertarSentencia(NodoSentencia nodoSentencia){
@@ -33,6 +36,20 @@ public class NodoBloque extends NodoSentencia {
         varLocalesInsertadasABorrar.add(varLocal);
     }
 
+    public void incrementarMemoriaALiberar(){
+        memoriaALiberar++;
+    }
+
+    public void generarCodigo(){
+        TablaDeSimbolos.getBloques().push(this);
+        for (NodoSentencia sentencia : sentencias){
+            sentencia.generarCodigo();
+        }
+        TablaDeSimbolos.insertarInstruccion("FMEM " + memoriaALiberar + "        ; libero la memoria reservada por el bloque");
+        TablaDeSimbolos.getUnidadActual().decrementarMemoriaReservada(memoriaALiberar);
+        TablaDeSimbolos.getBloques().pop();
+    }
+    
     public void imprimir(){
         System.out.println("{");
         for (NodoSentencia sentencia : sentencias) {

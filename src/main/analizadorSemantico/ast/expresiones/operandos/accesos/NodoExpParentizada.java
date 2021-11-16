@@ -32,6 +32,14 @@ public class NodoExpParentizada extends NodoPrimario{
             return nodoEncadenado.esVariable();
     }
 
+    public void generarCodigo() {
+        expresion.generarCodigo();
+    }
+
+    public boolean tieneValorDeRetorno() {
+        return false;
+    }
+
     public void imprimir(){
         System.out.print("(");
         expresion.imprimir();
