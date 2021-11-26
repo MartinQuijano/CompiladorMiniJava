@@ -11,6 +11,6 @@ public class NodoTrue extends NodoBoolean {
     }
 
     public void generarCodigo() {
-        TablaDeSimbolos.insertarInstruccion("PUSH " + 1 + "        ; guardo en el tope de la pila el valor del literal boolean true");
+        TablaDeSimbolos.insertarInstruccion("PUSH " + 1 + "        ; guardo en el tope de la pila el valor del literal boolean true cuyo valor es 1");
     }
 }

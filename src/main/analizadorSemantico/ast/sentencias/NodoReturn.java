@@ -18,20 +18,16 @@ public class NodoReturn extends NodoSentencia {
     }
 
     public void generarCodigo() {
-        TablaDeSimbolos.insertarInstruccion("FMEM " + TablaDeSimbolos.getUnidadActual().getMemoriaReservada());
-        TablaDeSimbolos.insertarInstruccion("STOREFP");
-        //TODO: refactor en servicio de unidad.
+        TablaDeSimbolos.insertarInstruccion("FMEM " + TablaDeSimbolos.getUnidadActual().getMemoriaReservada() + "        ; libero la memoria reservada por la unidad hasta el momento");
+        TablaDeSimbolos.insertarInstruccion("STOREFP        ; restauro la posicion correspondiente del fp que es la apuntada por el enlace");
+
         if (TablaDeSimbolos.getUnidadActual().esDinamica())
-            TablaDeSimbolos.insertarInstruccion("RET " + (TablaDeSimbolos.getUnidadActual().getParametros().size() + 1));
+            TablaDeSimbolos.insertarInstruccion("RET " + (TablaDeSimbolos.getUnidadActual().getParametros().size() + 1) + "        ; retorno de la unidad y libero memoria correspondiente a la cantidad de parametros + 1 por el this al ser una unidad dinamica");
         else
-            TablaDeSimbolos.insertarInstruccion("RET " + TablaDeSimbolos.getUnidadActual().getParametros().size());
+            TablaDeSimbolos.insertarInstruccion("RET " + TablaDeSimbolos.getUnidadActual().getParametros().size() + "        ; retorno de la unidad y libero memoria correspondiente a la cantidad de parametros");
     }
 
     public void setTokenDeDatos(Token tokenDeDatos){
         this.tokenDeDatos = tokenDeDatos;
-    }
-
-    public void imprimir() {
-        System.out.println("return");
     }
 }

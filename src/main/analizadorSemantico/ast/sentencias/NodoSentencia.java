@@ -11,6 +11,4 @@ public abstract class NodoSentencia {
 
     public abstract void generarCodigo();
 
-    public abstract void imprimir();
-
 }

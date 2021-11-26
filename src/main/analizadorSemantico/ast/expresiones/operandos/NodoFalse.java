@@ -11,6 +11,6 @@ public class NodoFalse extends NodoBoolean {
     }
 
     public void generarCodigo() {
-        TablaDeSimbolos.insertarInstruccion("PUSH " + 0 + "        ; guardo en el tope de la pila el valor del literal boolean false");
+        TablaDeSimbolos.insertarInstruccion("PUSH " + 0 + "        ; guardo en el tope de la pila el valor del literal boolean false que es 0");
     }
 }

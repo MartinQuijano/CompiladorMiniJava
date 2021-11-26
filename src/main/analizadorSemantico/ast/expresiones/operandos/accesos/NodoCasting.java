@@ -30,11 +30,6 @@ public class NodoCasting extends NodoAcceso{
         return tipoCasting;
     }
 
-    public void imprimir(){
-        System.out.print("(" + tokenDeDatos.getLexema() + ")");
-        nodoPrimario.imprimir();
-    }
-
     public boolean esLlamada() {
         return nodoPrimario.esLlamada();
     }
@@ -44,10 +39,7 @@ public class NodoCasting extends NodoAcceso{
     }
 
     public void generarCodigo() {
-        //TODO
-    }
-
-    public boolean tieneValorDeRetorno() {
-        return false;
+        nodoPrimario.setEsLadoIzqAsignacion(esLadoIzqAsignacion);
+        nodoPrimario.generarCodigo();
     }
 }

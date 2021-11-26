@@ -45,28 +45,30 @@ public class NodoLlamadaMetodo extends NodoUnidad {
             TablaDeSimbolos.insertarInstruccion("LOAD 3        ; cargo lo que será el this");
             if(!entradaMetodo.getTipo().getTokenDeDatos().getLexema().equals("void")){
                 TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo lugar para el retorno");
-                TablaDeSimbolos.insertarInstruccion("SWAP");
+                TablaDeSimbolos.insertarInstruccion("SWAP        ; hago un swap para dejar el this en la posicion que corresponde");
             }
             for (NodoExpresion expresion : argumentosActuales) {
                 expresion.generarCodigo();
-                TablaDeSimbolos.insertarInstruccion("SWAP");
+                TablaDeSimbolos.insertarInstruccion("SWAP        ; por cada argumento que agrego al tope de la pila hago un swap para dejar el this en la posicion correcta");
             }
             TablaDeSimbolos.insertarInstruccion("DUP        ; duplico el this para no perderlo");
             TablaDeSimbolos.insertarInstruccion("LOADREF 0        ; cargo la VT");
             TablaDeSimbolos.insertarInstruccion("LOADREF " + entradaMetodo.getOffset() + "        ; cargo la direccion del metodo");
             TablaDeSimbolos.insertarInstruccion("CALL        ; llamo al metodo");
-        } else {//TODO: ESTO ES ASI SI ES ESTATICO!
+        } else {
+            if(!entradaMetodo.getTipo().getTokenDeDatos().getLexema().equals("void"))
+                TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo lugar para el retorno");
             for (NodoExpresion expresion : argumentosActuales) {
                 expresion.generarCodigo();
             }
-            TablaDeSimbolos.insertarInstruccion("PUSH l" + tokenDeDatos.getLexema() + "_" + entradaMetodo.getDeclaradoEnClase());
-            TablaDeSimbolos.insertarInstruccion("CALL");
+            TablaDeSimbolos.insertarInstruccion("PUSH l" + tokenDeDatos.getLexema() + "_" + entradaMetodo.getDeclaradoEnClase() + "         ; cargo en el tope de la pila el label del metodo a llamar");
+            TablaDeSimbolos.insertarInstruccion("CALL        ; llamo al metodo cuyo label esta en el tope de la pila");
+        }
+
+        if (nodoEncadenado != null){
+            nodoEncadenado.setEsLadoIzqAsignacion(esLadoIzqAsignacion);
+            nodoEncadenado.generarCodigo();
         }
     }
 
-    public boolean tieneValorDeRetorno() {
-        if (entradaMetodo.getTipo().getTokenDeDatos().getLexema().equals("void"))
-            return false;
-        else return true;
-    }
 }

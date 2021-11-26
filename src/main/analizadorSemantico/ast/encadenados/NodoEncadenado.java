@@ -8,12 +8,11 @@ public abstract class NodoEncadenado {
 
     protected Token tokenDeDatos;
     protected NodoEncadenado nodoEncadenado;
+    protected boolean esLadoIzqAsignacion = false;
 
     public void setEncadenado(NodoEncadenado nodoEncadenado){
         this.nodoEncadenado = nodoEncadenado;
     }
-
-    public abstract void imprimir();
 
     public abstract Tipo chequear(Tipo tipo) throws ExcepcionSemantica;
 
@@ -22,4 +21,8 @@ public abstract class NodoEncadenado {
     public abstract boolean esVariable();
 
     public abstract void generarCodigo();
+
+    public void setEsLadoIzqAsignacion(boolean value){
+        esLadoIzqAsignacion = value;
+    }
 }

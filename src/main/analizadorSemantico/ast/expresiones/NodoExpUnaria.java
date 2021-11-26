@@ -36,17 +36,12 @@ public class NodoExpUnaria extends NodoExpresion{
         }
     }
 
-    public void imprimir(){
-        System.out.print(operador.getLexema());
-        operando.imprimir();
-    }
-
     public void generarCodigo() {
         operando.generarCodigo();
         if(operador.getLexema().equals("-")) {
-            TablaDeSimbolos.insertarInstruccion("NEG");
+            TablaDeSimbolos.insertarInstruccion("NEG        ; agrego la instruccion NEG para multiplicar por -1 el ultimo valor de la pila");
         } else if (operador.getLexema().equals("!")){
-            TablaDeSimbolos.insertarInstruccion("NOT");
+            TablaDeSimbolos.insertarInstruccion("NOT        ; agrego la instruccion NOT para hacer la negacion logica del ultimo valor de la pila");
         }
     }
 

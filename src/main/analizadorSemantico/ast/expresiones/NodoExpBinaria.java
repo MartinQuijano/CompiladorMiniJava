@@ -59,41 +59,35 @@ public class NodoExpBinaria extends NodoExpresion {
         }
     }
 
-    public void imprimir() {
-        ladoIzquierdo.imprimir();
-        System.out.print(" " + operador.getLexema() + " ");
-        ladoDerecho.imprimir();
-    }
-
     public void generarCodigo() {
         ladoIzquierdo.generarCodigo();
         ladoDerecho.generarCodigo();
         if (operador.getLexema().equals("+")) {
-            TablaDeSimbolos.insertarInstruccion("ADD");
+            TablaDeSimbolos.insertarInstruccion("ADD        ; instruccion ADD para sumar los ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("-")) {
-            TablaDeSimbolos.insertarInstruccion("SUB");
+            TablaDeSimbolos.insertarInstruccion("SUB        ; instruccion SUB para restar los ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("*")) {
-            TablaDeSimbolos.insertarInstruccion("MUL");
+            TablaDeSimbolos.insertarInstruccion("MUL        ; instruccion MUL para multiplicar ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("/")) {
-            TablaDeSimbolos.insertarInstruccion("DIV");
+            TablaDeSimbolos.insertarInstruccion("DIV        ; instruccion DIV para dividir el anteultimo valor de la pila por el ultimo valor en la pila");
         } else if (operador.getLexema().equals("%")) {
-            TablaDeSimbolos.insertarInstruccion("MOD");
+            TablaDeSimbolos.insertarInstruccion("MOD        ; instruccion MOD para calcular el modulo entre el anteultimo valor de la pila por el ultimo valor en la pila");
         } else if (operador.getLexema().equals("&&")) {
-            TablaDeSimbolos.insertarInstruccion("AND");
+            TablaDeSimbolos.insertarInstruccion("AND        ; instruccion AND para calcular el valor booleano entre los ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("||")) {
-            TablaDeSimbolos.insertarInstruccion("OR");
+            TablaDeSimbolos.insertarInstruccion("OR        ; instruccion OR para calcular el valor booleano entre los ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("==")) {
-            TablaDeSimbolos.insertarInstruccion("EQ");
+            TablaDeSimbolos.insertarInstruccion("EQ        ; instruccion EQ para calcular si son equivalentes los ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("!=")) {
-            TablaDeSimbolos.insertarInstruccion("NE");
+            TablaDeSimbolos.insertarInstruccion("NE        ; instruccion NE para calcular si son distintos los ultimos 2 valores de la pila");
         } else if (operador.getLexema().equals("<")) {
-            TablaDeSimbolos.insertarInstruccion("LT");
+            TablaDeSimbolos.insertarInstruccion("LT        ; instruccion LT para calcular si el anteultimo valor de la pila es menor que el que esta ultimo");
         } else if (operador.getLexema().equals("<=")) {
-            TablaDeSimbolos.insertarInstruccion("LE");
+            TablaDeSimbolos.insertarInstruccion("LE        ; instruccion LE para calcular si el anteultimo valor de la pila es menor-igual que el que esta ultimo");
         } else if (operador.getLexema().equals(">")) {
-            TablaDeSimbolos.insertarInstruccion("GT");
+            TablaDeSimbolos.insertarInstruccion("GT        ; instruccion GT para calcular si el anteultimo valor de la pila es mayor que el que esta ultimo");
         } else if (operador.getLexema().equals(">=")) {
-            TablaDeSimbolos.insertarInstruccion("GE");
+            TablaDeSimbolos.insertarInstruccion("GE        ; instruccion GE para calcular si el anteultimo valor de la pila es mayor-igual que el que esta ultimo");
         }
     }
 

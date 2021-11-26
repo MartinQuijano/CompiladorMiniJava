@@ -9,7 +9,6 @@ import main.analizadorSemantico.tablaDeSimbolos.unidades.Unidad;
 import main.analizadorSemantico.tablaDeSimbolos.variables.Atributo;
 import main.analizadorSemantico.tablaDeSimbolos.variables.Parametro;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,6 +29,7 @@ public class Clase {
     private ArrayList<Metodo> metodosEnOrdenParaOffset;
     private ArrayList<Atributo> atributosEnOrdenParaOffset;
     private boolean codigoGenerado;
+    private boolean dataGenerada;
 
     public Clase(Token tokenDeDatos) {
         this.tokenDeDatos = tokenDeDatos;
@@ -45,6 +45,7 @@ public class Clase {
         metodosEnOrdenParaOffset = new ArrayList<>();
         atributosEnOrdenParaOffset = new ArrayList<>();
         codigoGenerado = false;
+        dataGenerada = false;
     }
 
     public Tipo getTipo() {
@@ -63,22 +64,23 @@ public class Clase {
         return tokenDeDatos;
     }
 
-    public void setCodigoGenerado(boolean value){
+    public void setCodigoGenerado(boolean value) {
         codigoGenerado = value;
     }
 
-    public void generarCodigo() {
-        //TODO: de momento ignoro la generacion de object
-        if (!tokenDeDatos.getLexema().equals("Object")) {
-            Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
-            if (claseAncestro != null)
-                if (!claseAncestro.yaGeneroCodigo())
-                    claseAncestro.generarCodigo();
-            generarData();
-            generarCode();
+    public void setDataGenerada(boolean value) {
+        dataGenerada = value;
+    }
 
-            codigoGenerado = true;
-        }
+    public void generarCodigo() {
+        Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
+        if (claseAncestro != null)
+            if (!claseAncestro.yaGeneroCodigo()) {
+                claseAncestro.generarCodigo();
+            }
+        generarCode();
+
+        codigoGenerado = true;
     }
 
     private void generarCode() {
@@ -91,12 +93,16 @@ public class Clase {
             }
         }
 
-
         TablaDeSimbolos.insertarInstruccion("");
     }
 
-    private void generarData() {
-        TablaDeSimbolos.insertarInstruccion(".DATA");
+    public void generarData() {
+        Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
+        if (claseAncestro != null)
+            if (!claseAncestro.yaGeneroData()) {
+                claseAncestro.generarData();
+            }
+
         String virtualTableDW = "VT_" + tokenDeDatos.getLexema() + ":";
         if (tieneMetodosDinamicos) {
             virtualTableDW += " DW ";
@@ -112,12 +118,14 @@ public class Clase {
                 }
             }
             virtualTableDW = virtualTableDW.substring(0, virtualTableDW.length() - 2);
-        }
-        else{
+        } else {
             virtualTableDW += " NOP";
         }
+
         TablaDeSimbolos.insertarInstruccion(virtualTableDW);
         TablaDeSimbolos.insertarInstruccion("");
+
+        dataGenerada = true;
     }
 
     public ArrayList<Metodo> getMetodosEnOrdenParaOffset() {
@@ -130,6 +138,7 @@ public class Clase {
 
     private String generarDWDeLosMetodosDeLosAncestros(String virtualTableDW) {
         Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
+
         for (Metodo metodo : claseAncestro.getMetodosEnOrdenParaOffset()) {
             Metodo metodoYaExistente = existeMetodo(metodo.getTokenDeDatos().getLexema());
 
@@ -143,17 +152,22 @@ public class Clase {
                 virtualTableDW += "l" + metodoYaExistente.getTokenDeDatos().getLexema() + "_" + metodoYaExistente.getDeclaradoEnClase() + ", ";
             } else {
                 metodoYaExistente.setOffset(ultimoOffsetVT);
+                ultimoOffsetVT++;
                 metodoYaExistente.setSeLeAsignoOffset(true);
                 metodosEnOrdenParaOffset.add(metodo);
-                ultimoOffsetVT++;
                 virtualTableDW += "l" + metodoYaExistente.getTokenDeDatos().getLexema() + "_" + metodo.getDeclaradoEnClase() + ", ";
             }
+
         }
         return virtualTableDW;
     }
 
     public boolean yaGeneroCodigo() {
         return codigoGenerado;
+    }
+
+    public boolean yaGeneroData() {
+        return dataGenerada;
     }
 
     public Atributo existeAtributo(String nombreDeAtributo) {
@@ -245,7 +259,6 @@ public class Clase {
     }
 
     private void establecerOffsetDeLosAtributos() {
-        //TODO: para offset de los atributos
         Clase claseAncestro = TablaDeSimbolos.existeClase(heredaDe.getLexema());
         for (Atributo atributo : claseAncestro.atributosEnOrdenParaOffset) {
             ultimoOffsetAtributo++;

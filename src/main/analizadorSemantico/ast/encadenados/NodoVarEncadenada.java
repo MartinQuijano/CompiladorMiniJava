@@ -9,16 +9,10 @@ import main.analizadorSemantico.tablaDeSimbolos.variables.Variable;
 
 public class NodoVarEncadenada extends NodoEncadenado {
 
+    private Variable entradaVariable;
+
     public NodoVarEncadenada(Token tokenDeDatos) {
         this.tokenDeDatos = tokenDeDatos;
-    }
-
-    public void imprimir() {
-        System.out.print(tokenDeDatos.getLexema());
-        if (nodoEncadenado != null) {
-            System.out.print(".");
-            nodoEncadenado.imprimir();
-        }
     }
 
     public boolean esLlamada() {
@@ -35,10 +29,6 @@ public class NodoVarEncadenada extends NodoEncadenado {
             return nodoEncadenado.esVariable();
     }
 
-    public void generarCodigo() {
-        //TODO
-    }
-
     public Tipo chequear(Tipo tipo) throws ExcepcionSemantica {
         Variable variable = null;
         if (tipo.esTipoClase())
@@ -46,6 +36,7 @@ public class NodoVarEncadenada extends NodoEncadenado {
                 if (TablaDeSimbolos.existeClase(tipo.getTokenDeDatos().getLexema()).existeAtributo(tokenDeDatos.getLexema()) != null) {
                     Clase claseEnLaQueSeBuscaElAtributo = TablaDeSimbolos.existeClase(tipo.getTokenDeDatos().getLexema());
                     variable = claseEnLaQueSeBuscaElAtributo.existeAtributo(tokenDeDatos.getLexema());
+                    entradaVariable = variable;
                     if (!variable.esVisibile()) {
                         throw new ExcepcionSemantica(tokenDeDatos, "El atributo existe pero no se tiene acceso a el.");
                     }
@@ -64,4 +55,18 @@ public class NodoVarEncadenada extends NodoEncadenado {
         else
             return variable.getTipo();
     }
+
+    public void generarCodigo() {
+        if(!esLadoIzqAsignacion || nodoEncadenado != null){
+            TablaDeSimbolos.insertarInstruccion("LOADREF " + entradaVariable.getOffset() + "        ; pongo en el tope de la pila el valor del atributo");
+        } else{
+            TablaDeSimbolos.insertarInstruccion("SWAP        ; intercambio los valores en la pila para el storeref");
+            TablaDeSimbolos.insertarInstruccion("STOREREF " + entradaVariable.getOffset() + "        ; almaceno el valor del tope de la pila en el atributo con el offset indicado");
+        }
+        if(nodoEncadenado != null){
+            nodoEncadenado.setEsLadoIzqAsignacion(esLadoIzqAsignacion);
+            nodoEncadenado.generarCodigo();
+        }
+    }
+
 }

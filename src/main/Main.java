@@ -13,19 +13,11 @@ import java.io.File;
 
 public class Main {
 
-    private static void print_token(Token token) {
-        System.out.print("(" + token.getNombre());
-        System.out.print(", " + token.getLexema());
-        System.out.println(", " + token.getLinea() + ")");
-    }
-
     public static void main(String args[]) {
 
-        //ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo(args[0]);
-        ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\test.java");
+        ProcesadorDeArchivo procesadorDeArchivo = new ProcesadorDeArchivo(args[0]);
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(procesadorDeArchivo);
-    //    File archivoDeSalida = new File("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\" + args[1]);
-        File archivoDeSalida = new File("C:\\Users\\Kottler\\Desktop\\Compiladores e Interpretes\\CompiladorMiniJava\\resources\\output.txt");
+        File archivoDeSalida = new File(args[1]);
 
         TablaDeSimbolos tablaDeSimbolos = TablaDeSimbolos.getInstance();
 
@@ -34,7 +26,6 @@ public class Main {
             AnalizadorSintactico analizadorSintactico = new AnalizadorSintactico(analizadorLexico);
             TablaDeSimbolos.chequearDeclaraciones();
             TablaDeSimbolos.consolidar();
-            //TablaDeSimbolos.mostrarTabla();
             TablaDeSimbolos.chequearSentencias();
             TablaDeSimbolos.generarCodigo();
             TablaDeSimbolos.escribirCodigoEnArchivo(archivoDeSalida);

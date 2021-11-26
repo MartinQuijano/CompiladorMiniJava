@@ -30,7 +30,7 @@ public class NodoConstructor extends NodoUnidad{
     }
 
     public void generarCodigo() {
-        //TODO: revisar
+
         TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo memoria para el resultado del malloc (ref a CIR)");
         TablaDeSimbolos.insertarInstruccion("PUSH " + (1 + TablaDeSimbolos.existeClase(tokenDeDatos.getLexema()).getAtributosEnOrdenParaOffset().size()) + "        ; guardo en el tope de la pila la cantidad de variable de instancia del CIR +1 para la ref a la VT");
         TablaDeSimbolos.insertarInstruccion("PUSH simple_malloc        ; pongo la dir de la rutina para alojar memoria en el heap en el tope de la pila");
@@ -45,9 +45,11 @@ public class NodoConstructor extends NodoUnidad{
         }
         TablaDeSimbolos.insertarInstruccion("PUSH l" + tokenDeDatos.getLexema() + "_" + tokenDeDatos.getLexema() + "        ; hago el push del label del constructor");
         TablaDeSimbolos.insertarInstruccion("CALL        ; hago el call del label del constructor que esta en el tope de la pila");
+
+        if (nodoEncadenado != null){
+            nodoEncadenado.setEsLadoIzqAsignacion(esLadoIzqAsignacion);
+            nodoEncadenado.generarCodigo();
+        }
     }
 
-    public boolean tieneValorDeRetorno() {
-        return true;
-    }
 }

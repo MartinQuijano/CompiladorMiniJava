@@ -8,8 +8,6 @@ import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
 
 public class NodoLlamada extends NodoSentencia {
     private NodoAcceso nodoAcceso;
-
-    //todo de abajo
     private Tipo tipoDeRetorno;
 
     public NodoLlamada(Token tokenDeDatos, NodoAcceso nodoAcceso) {
@@ -25,16 +23,8 @@ public class NodoLlamada extends NodoSentencia {
 
     public void generarCodigo() {
         nodoAcceso.generarCodigo();
-        //TODO: ojo en encadenado que tiene que ser el ultimo el que tenga valor de retorno! Se podria guardar cuando hago el chequear mas arriba, guardo el tipo y ahi determino!
-        //if(nodoAcceso.tieneValorDeRetorno())
-        //    TablaDeSimbolos.insertarInstruccion("POP        ; descarto el valor del tope de la pila que no es requerido");
-
-        //conformando el todo de arriba
         if (!tipoDeRetorno.getTokenDeDatos().getLexema().equals("void"))
-            TablaDeSimbolos.insertarInstruccion("POP        ; descarto el valor del tope de la pila que no es requerido");
+            TablaDeSimbolos.insertarInstruccion("POP        ; descarto el valor del tope de la pila que no es requerido porque la unidad no devuelve nada");
     }
 
-    public void imprimir() {
-        nodoAcceso.imprimir();
-    }
 }

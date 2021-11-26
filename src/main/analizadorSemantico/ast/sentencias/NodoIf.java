@@ -3,28 +3,34 @@ package main.analizadorSemantico.ast.sentencias;
 import main.analizadorLexico.Token;
 import main.analizadorSemantico.ast.expresiones.NodoExpresion;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
+import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
 
 public class NodoIf extends NodoSentencia {
 
-    protected NodoSentencia sentenciaThen;
+    protected NodoBloque bloqueThen;
     protected NodoExpresion condicion;
 
-    public NodoIf(Token tokenDeDatos, NodoExpresion nodoExpresion, NodoSentencia nodoSentencia){
+    public NodoIf(Token tokenDeDatos, NodoExpresion nodoExpresion, NodoBloque bloqueThen){
         this.tokenDeDatos = tokenDeDatos;
         this.condicion = nodoExpresion;
-        this.sentenciaThen = nodoSentencia;
+        this.bloqueThen = bloqueThen;
     }
 
     public void chequear() throws ExcepcionSemantica {
         if(!esCondicionBoolean())
             throw new ExcepcionSemantica(tokenDeDatos, "La expresion de condicion debe ser de tipo boolean");
         else
-            sentenciaThen.chequear();
+            bloqueThen.chequear();
     }
 
     public void generarCodigo() {
-        //TODO
+        condicion.generarCodigo();
+        TablaDeSimbolos.getUnidadActual().incrementarIfCounter();
+        String etiquetaFinIf = "finif_" + TablaDeSimbolos.getUnidadActual().getTokenDeDatos().getLexema() + "_" + TablaDeSimbolos.getUnidadActual().getIfCounter();
+        TablaDeSimbolos.insertarInstruccion("BF " + etiquetaFinIf + "        ; agrego el salto condicional con la etiqueta de fin del if");
+        bloqueThen.generarCodigo();
+        TablaDeSimbolos.insertarInstruccion(etiquetaFinIf + ": NOP        ; agrego la etiqueta donde termina el fin.");
     }
 
     private boolean esCondicionBoolean() throws ExcepcionSemantica {
@@ -34,10 +40,4 @@ public class NodoIf extends NodoSentencia {
         else return false;
     }
 
-    public void imprimir() {
-        System.out.print("if(");
-        condicion.imprimir();
-        System.out.print(")");
-        sentenciaThen.imprimir();
-    }
 }

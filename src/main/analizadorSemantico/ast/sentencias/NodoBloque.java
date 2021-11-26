@@ -40,6 +40,10 @@ public class NodoBloque extends NodoSentencia {
         memoriaALiberar++;
     }
 
+    public void decrementarMemoriaALiberar(int mem){
+        memoriaALiberar -= mem;
+    }
+
     public void generarCodigo(){
         TablaDeSimbolos.getBloques().push(this);
         for (NodoSentencia sentencia : sentencias){
@@ -49,14 +53,5 @@ public class NodoBloque extends NodoSentencia {
         TablaDeSimbolos.getUnidadActual().decrementarMemoriaReservada(memoriaALiberar);
         TablaDeSimbolos.getBloques().pop();
     }
-    
-    public void imprimir(){
-        System.out.println("{");
-        for (NodoSentencia sentencia : sentencias) {
-            sentencia.imprimir();
-        }
-        System.out.println();
-        System.out.println("}");
-        System.out.println();
-    }
+
 }

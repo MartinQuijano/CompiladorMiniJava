@@ -30,17 +30,12 @@ public class NodoReturnExpresion extends NodoReturn{
     public void generarCodigo(){
         expresion.generarCodigo();
         TablaDeSimbolos.insertarInstruccion("STORE " + entradaUnidad.getOffsetDeLugarDeRetorno() + "        ; guardo el valor del tope de la pila en el lugar del valor de retorno");
-        TablaDeSimbolos.insertarInstruccion("FMEM " + TablaDeSimbolos.getUnidadActual().getMemoriaReservada());
-        TablaDeSimbolos.insertarInstruccion("STOREFP");
-        //TODO: refactor en servicio de unidad.
-        if (TablaDeSimbolos.getUnidadActual().esDinamica())
-            TablaDeSimbolos.insertarInstruccion("RET " + (TablaDeSimbolos.getUnidadActual().getParametros().size() + 1));
-        else
-            TablaDeSimbolos.insertarInstruccion("RET " + TablaDeSimbolos.getUnidadActual().getParametros().size());
-    }
+        TablaDeSimbolos.insertarInstruccion("FMEM " + TablaDeSimbolos.getUnidadActual().getMemoriaReservada() + "        ; libero la memoria reservada por la unidad hasta el momento");
+        TablaDeSimbolos.insertarInstruccion("STOREFP        ; restauro la posicion correspondiente del fp que es la apuntada por el enlace");
 
-    public void imprimir(){
-        System.out.print("return ");
-        expresion.imprimir();
+        if (TablaDeSimbolos.getUnidadActual().esDinamica())
+            TablaDeSimbolos.insertarInstruccion("RET " + (TablaDeSimbolos.getUnidadActual().getParametros().size() + 1) + "        ; retorno de la unidad y libero memoria correspondiente a la cantidad de parametros + 1 por el this al ser una unidad dinamica");
+        else
+            TablaDeSimbolos.insertarInstruccion("RET " + TablaDeSimbolos.getUnidadActual().getParametros().size() + "        ; retorno de la unidad y libero memoria correspondiente a la cantidad de parametros");
     }
 }

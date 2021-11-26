@@ -13,7 +13,7 @@ public class NodoFor extends NodoSentencia {
     protected NodoVarLocal varLocal;
     protected NodoExpresion expresion;
     protected NodoAsignacion asignacion;
-    protected NodoSentencia sentencia;
+    protected NodoBloque bloqueSentencia;
 
     public NodoFor(Token tokenDeDatos, NodoVarLocal nodoVarLocal, NodoExpresion nodoExpresion, NodoAsignacion nodoAsignacion){
         this.tokenDeDatos = tokenDeDatos;
@@ -22,8 +22,8 @@ public class NodoFor extends NodoSentencia {
         this.asignacion = nodoAsignacion;
     }
 
-    public void setSentencia(NodoSentencia nodoSentencia){
-        this.sentencia = nodoSentencia;
+    public void setSentencia(NodoBloque bloqueSentencia){
+        this.bloqueSentencia = bloqueSentencia;
     }
 
     public void chequear() throws ExcepcionSemantica {
@@ -31,13 +31,26 @@ public class NodoFor extends NodoSentencia {
         if(!esExpresionBoolean())
             throw new ExcepcionSemantica(tokenDeDatos, "El tipo de la expresion tiene que ser booleano.");
         asignacion.chequear();
-        sentencia.chequear();
+        bloqueSentencia.chequear();
 
         TablaDeSimbolos.getUnidadActual().eliminarVarLocal(new VarLocal(varLocal.getTokenDeDatos(), varLocal.getTipo()));
     }
 
     public void generarCodigo() {
-        //TODO
+        String etiquetaInicioCicloFor = "inicioFor_" + TablaDeSimbolos.getUnidadActual().getTokenDeDatos().getLexema() + "_" + TablaDeSimbolos.getUnidadActual().getForCounter();
+        String etiquetaFinCicloFor = "finFor_" + TablaDeSimbolos.getUnidadActual().getTokenDeDatos().getLexema() + "_" + TablaDeSimbolos.getUnidadActual().getForCounter();
+        TablaDeSimbolos.getUnidadActual().incrementarForCounter();
+        varLocal.generarCodigo();
+        TablaDeSimbolos.insertarInstruccion(etiquetaInicioCicloFor + ":        ; agrego la etiqueta de inicio del ciclo del for");
+        expresion.generarCodigo();
+        TablaDeSimbolos.insertarInstruccion("BF " + etiquetaFinCicloFor + "          ; agrego el salto condicional con la etiqueta del fin del ciclo for");
+        bloqueSentencia.generarCodigo();
+        asignacion.generarCodigo();
+        TablaDeSimbolos.insertarInstruccion("JUMP " + etiquetaInicioCicloFor + "         ; instruccion JUMP para saltar de nuevo al inicio del ciclo");
+        TablaDeSimbolos.insertarInstruccion(etiquetaFinCicloFor + ": NOP          ; agrego la etiqueta de fin del ciclo for");
+        TablaDeSimbolos.insertarInstruccion("FMEM 1        ; libero la memoria reservada para la variable del for");
+        TablaDeSimbolos.getUnidadActual().decrementarMemoriaReservada(1);
+        TablaDeSimbolos.getBloques().peek().decrementarMemoriaALiberar(1);
     }
 
     private boolean esExpresionBoolean() throws ExcepcionSemantica {
@@ -45,16 +58,5 @@ public class NodoFor extends NodoSentencia {
         if(tipoExpresion.getTokenDeDatos().getLexema().equals("boolean"))
             return true;
         else return false;
-    }
-
-    public void imprimir() {
-        System.out.print("for( ");
-        varLocal.imprimir();
-        System.out.print("; ");
-        expresion.imprimir();
-        System.out.print(";");
-        asignacion.imprimir();
-        System.out.print(")");
-        sentencia.imprimir();
     }
 }

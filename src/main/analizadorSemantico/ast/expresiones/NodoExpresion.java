@@ -10,7 +10,5 @@ public abstract class NodoExpresion {
 
     public abstract Tipo chequear() throws ExcepcionSemantica;
 
-    public abstract void imprimir();
-
     public abstract void generarCodigo();
 }

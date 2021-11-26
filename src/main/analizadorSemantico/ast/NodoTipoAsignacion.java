@@ -24,8 +24,4 @@ public class NodoTipoAsignacion{
         return expresion;
     }
 
-    public void imprimir(){
-        System.out.print(" " + simbolo.getLexema() + " ");
-        expresion.imprimir();
-    }
 }

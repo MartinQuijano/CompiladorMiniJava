@@ -43,10 +43,7 @@ public class NodoVarLocalAsignacion extends NodoVarLocal {
         TablaDeSimbolos.insertarInstruccion("STORE " + entradaVarLocal.getOffset() + "        ; guardo en la var local con el offset indicado el valor del tope de la pila");
 
         TablaDeSimbolos.getBloques().peek().incrementarMemoriaALiberar();
+        TablaDeSimbolos.getUnidadActual().incrementarMemoriaReservada();
     }
 
-    public void imprimir(){
-        System.out.print(tipo.getTokenDeDatos().getLexema() + " " + tokenDeDatos.getLexema() + " = ");
-        nodoExpresion.imprimir();
-    }
 }

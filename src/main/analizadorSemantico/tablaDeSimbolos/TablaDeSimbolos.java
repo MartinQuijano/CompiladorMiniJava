@@ -50,6 +50,7 @@ public final class TablaDeSimbolos {
         Parametro i = new Parametro(new Token("idMetVar", "i", 0), new TipoEntero());
         debugPrint.insertarParametro(i);
         debugPrint.setBloque(new NodoBloque());
+        debugPrint.setYaGeneroCodigo(true);
         object.insertarMetodo(debugPrint);
 
         Unidad constructorPorDefecto = new Constructor(new Token("idClase", object.getTokenDeDatos().getLexema(), 0), object.getTokenDeDatos().getLexema());
@@ -57,6 +58,7 @@ public final class TablaDeSimbolos {
         object.insertarConstructor(constructorPorDefecto);
 
         object.setCodigoGenerado(true);
+        object.setDataGenerada(true);
         clases.put("Object", object);
 
     }
@@ -67,58 +69,68 @@ public final class TablaDeSimbolos {
 
         Metodo read = new Metodo(new Token("idMetVar", "read", 0), new TipoEntero(), "static", system.getTokenDeDatos().getLexema());
         read.setBloque(new NodoBloque());
+        read.setYaGeneroCodigo(true);
         system.insertarMetodo(read);
 
         Metodo printB = new Metodo(new Token("idMetVar", "printB", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         Parametro b = new Parametro(new Token("idMetVar", "b", 0), new TipoBoolean());
         printB.insertarParametro(b);
         printB.setBloque(new NodoBloque());
+        printB.setYaGeneroCodigo(true);
         system.insertarMetodo(printB);
 
         Metodo printC = new Metodo(new Token("idMetVar", "printC", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         Parametro c = new Parametro(new Token("idMetVar", "c", 0), new TipoChar());
         printC.insertarParametro(c);
         printC.setBloque(new NodoBloque());
+        printC.setYaGeneroCodigo(true);
         system.insertarMetodo(printC);
 
         Metodo printI = new Metodo(new Token("idMetVar", "printI", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         Parametro i = new Parametro(new Token("idMetVar", "i", 0), new TipoEntero());
         printI.insertarParametro(i);
         printI.setBloque(new NodoBloque());
+        printI.setYaGeneroCodigo(true);
         system.insertarMetodo(printI);
 
         Metodo printS = new Metodo(new Token("idMetVar", "printS", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         Parametro s = new Parametro(new Token("idMetVar", "s", 0), new TipoString());
         printS.insertarParametro(s);
         printS.setBloque(new NodoBloque());
+        printS.setYaGeneroCodigo(true);
         system.insertarMetodo(printS);
 
         Metodo println = new Metodo(new Token("idMetVar", "println", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         println.setBloque(new NodoBloque());
+        println.setYaGeneroCodigo(true);
         system.insertarMetodo(println);
 
         Metodo printBln = new Metodo(new Token("idMetVar", "printBln", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         b = new Parametro(new Token("idMetVar", "b", 0), new TipoBoolean());
         printBln.insertarParametro(b);
         printBln.setBloque(new NodoBloque());
+        printBln.setYaGeneroCodigo(true);
         system.insertarMetodo(printBln);
 
         Metodo printCln = new Metodo(new Token("idMetVar", "printCln", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         c = new Parametro(new Token("idMetVar", "c", 0), new TipoChar());
         printCln.insertarParametro(c);
         printCln.setBloque(new NodoBloque());
+        printCln.setYaGeneroCodigo(true);
         system.insertarMetodo(printCln);
 
         Metodo printIln = new Metodo(new Token("idMetVar", "printIln", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         i = new Parametro(new Token("idMetVar", "i", 0), new TipoEntero());
         printIln.insertarParametro(i);
         printIln.setBloque(new NodoBloque());
+        printIln.setYaGeneroCodigo(true);
         system.insertarMetodo(printIln);
 
         Metodo printSln = new Metodo(new Token("idMetVar", "printSln", 0), new TipoVoid(), "static", system.getTokenDeDatos().getLexema());
         s = new Parametro(new Token("idMetVar", "s", 0), new TipoString());
         printSln.insertarParametro(s);
         printSln.setBloque(new NodoBloque());
+        printSln.setYaGeneroCodigo(true);
         system.insertarMetodo(printSln);
 
         Unidad constructorPorDefecto = new Constructor(new Token("idClase", system.getTokenDeDatos().getLexema(), 0), system.getTokenDeDatos().getLexema());
@@ -126,6 +138,7 @@ public final class TablaDeSimbolos {
         system.insertarConstructor(constructorPorDefecto);
 
         system.setCodigoGenerado(true);
+        system.setDataGenerada(true);
         clases.put("System", system);
 
     }
@@ -158,12 +171,15 @@ public final class TablaDeSimbolos {
         generarCodigoMetodosObject();
         generarCodigoMetodosSystem();
 
+        TablaDeSimbolos.insertarInstruccion(".DATA");
         for (Clase clase : clases.values()) {
-            //TODO: de momento ignoro System
-            if(clase.yaGeneroCodigo())
-            if (!clase.getTokenDeDatos().getLexema().equals("System")) {
+            if (!clase.yaGeneroData())
+                clase.generarData();
+        }
+
+        for (Clase clase : clases.values()) {
+            if (!clase.yaGeneroCodigo())
                 clase.generarCodigo();
-            }
         }
     }
 
@@ -255,42 +271,6 @@ public final class TablaDeSimbolos {
         return seEncontroMain;
     }
 
-    public static void mostrarTabla() {
-        for (Clase clase : clases.values()) {
-            System.out.println();
-            System.out.println(clase.getTokenDeDatos().getLexema());
-            for (Atributo atributo : clase.getAtributos().values()) {
-                Token tokenDeAtributo = atributo.getTokenDeDatos();
-                System.out.println("    " + atributo.getVisibilidad() + " " + atributo.getTipo().getTokenDeDatos().getLexema() + " " + tokenDeAtributo.getLexema() + ";");
-            }
-            System.out.println();
-            System.out.print("    " + clase.getConstructor().getTokenDeDatos().getLexema() + "(");
-            int cantidadParametros = clase.getConstructor().getParametros().size();
-            int contadorParametrosProcesados = 0;
-            for (Parametro parametro : clase.getConstructor().getParametros()) {
-                contadorParametrosProcesados++;
-                System.out.print(parametro.getTipo().getTokenDeDatos().getLexema() + " " + parametro.getTokenDeDatos().getLexema());
-                if (contadorParametrosProcesados < cantidadParametros)
-                    System.out.print(", ");
-            }
-            System.out.println(")");
-            clase.getConstructor().getBloque().imprimir();
-            for (Metodo metodo : clase.getMetodos().values()) {
-                System.out.print("    " + metodo.getForma() + " " + metodo.getTipo().getTokenDeDatos().getLexema() + " " + metodo.getTokenDeDatos().getLexema() + "(");
-                cantidadParametros = metodo.getParametros().size();
-                contadorParametrosProcesados = 0;
-                for (Parametro parametro : metodo.getParametros()) {
-                    contadorParametrosProcesados++;
-                    System.out.print(parametro.getTipo().getTokenDeDatos().getLexema() + " " + parametro.getTokenDeDatos().getLexema());
-                    if (contadorParametrosProcesados < cantidadParametros)
-                        System.out.print(", ");
-                }
-                System.out.println(")");
-                metodo.getBloque().imprimir();
-            }
-        }
-    }
-
     public static void generarCodigoDeInicializacion() {
         instrucciones.add(".CODE");
         instrucciones.add("PUSH simple_heap_init");
@@ -338,17 +318,15 @@ public final class TablaDeSimbolos {
         TablaDeSimbolos.insertarInstruccion("");
     }
 
-    private static void generarCodigoMetodosSystem(){
-        //TODO: modificar este en particular porque tiene valor de retorno y tiene que leer (esta sin tocar)
+    private static void generarCodigoMetodosSystem() {
         TablaDeSimbolos.insertarInstruccion("lread_System:");
         TablaDeSimbolos.insertarInstruccion("LOADFP");
         TablaDeSimbolos.insertarInstruccion("LOADSP");
         TablaDeSimbolos.insertarInstruccion("STOREFP");
-        TablaDeSimbolos.insertarInstruccion("LOAD 3");
-        TablaDeSimbolos.insertarInstruccion("IPRINT");
-        TablaDeSimbolos.insertarInstruccion("PRNLN");
+        TablaDeSimbolos.insertarInstruccion("READ");
+        TablaDeSimbolos.insertarInstruccion("STORE 3");
         TablaDeSimbolos.insertarInstruccion("STOREFP");
-        TablaDeSimbolos.insertarInstruccion("RET 1");
+        TablaDeSimbolos.insertarInstruccion("RET 0");
         TablaDeSimbolos.insertarInstruccion("");
 
         TablaDeSimbolos.insertarInstruccion("lprintB_System:");

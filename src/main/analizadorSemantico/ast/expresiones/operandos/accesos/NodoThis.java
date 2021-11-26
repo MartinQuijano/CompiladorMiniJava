@@ -37,18 +37,12 @@ public class NodoThis extends NodoPrimario{
     }
 
     public void generarCodigo() {
-        //TODO
-    }
+        TablaDeSimbolos.insertarInstruccion("LOAD 3        ; pongo this en el tope de la pila");
 
-    public boolean tieneValorDeRetorno() {
-        return false;
-    }
-
-    public void imprimir(){
-        System.out.print("this");
-        if(nodoEncadenado != null) {
-            System.out.print(".");
-            nodoEncadenado.imprimir();
+        if(nodoEncadenado != null){
+            nodoEncadenado.setEsLadoIzqAsignacion(esLadoIzqAsignacion);
+            nodoEncadenado.generarCodigo();
         }
     }
+
 }

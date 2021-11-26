@@ -16,6 +16,6 @@ public class NodoNull extends NodoOperando {
     }
 
     public void generarCodigo() {
-        TablaDeSimbolos.insertarInstruccion("PUSH " + 0);
+        TablaDeSimbolos.insertarInstruccion("PUSH " + 0 + "        ; guardo en el tope de la pila el valor de null que es 0");
     }
 }

@@ -14,5 +14,4 @@ public abstract class NodoAcceso extends NodoOperando {
         esLadoIzqAsignacion = value;
     }
 
-    public abstract boolean tieneValorDeRetorno();
 }

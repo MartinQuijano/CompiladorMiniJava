@@ -2,7 +2,6 @@ package main.analizadorSemantico.ast.expresiones.operandos.accesos;
 
 import main.analizadorSemantico.ast.expresiones.NodoExpresion;
 import main.analizadorSemantico.excepciones.ExcepcionSemantica;
-import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
 import main.analizadorSemantico.tablaDeSimbolos.unidades.Unidad;
 
@@ -45,12 +44,4 @@ public abstract class NodoUnidad extends NodoPrimario implements NodoConArgs{
             return nodoEncadenado.esVariable();
     }
 
-    public void imprimir(){
-        System.out.print(tokenDeDatos.getLexema() + "(");
-        for (NodoExpresion nodoExpresion: argumentosActuales) {
-            nodoExpresion.imprimir();
-            System.out.print(", ");
-        }
-        System.out.print(")");
-    }
 }

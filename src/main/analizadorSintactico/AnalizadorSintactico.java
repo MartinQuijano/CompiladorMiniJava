@@ -537,10 +537,17 @@ public class AnalizadorSintactico {
         if (tokenActual.getNombre().equals("else")) {
             match("else");
             NodoSentencia nodoSentenciaElse = sentencia();
-            NodoIfElse nodoIfElse = new NodoIfElse(tokenDeDatosIf, nodoExpresion, nodoSentenciaThen, nodoSentenciaElse);
+            NodoBloque bloqueThen = new NodoBloque();
+            bloqueThen.insertarSentencia(nodoSentenciaThen);
+            NodoBloque bloqueElse = new NodoBloque();
+            bloqueElse.insertarSentencia(nodoSentenciaElse);
+
+            NodoIfElse nodoIfElse = new NodoIfElse(tokenDeDatosIf, nodoExpresion, bloqueThen, bloqueElse);
             return nodoIfElse;
         } else {
-            NodoIf nodoIf = new NodoIf(tokenDeDatosIf, nodoExpresion, nodoSentenciaThen);
+            NodoBloque bloqueThen = new NodoBloque();
+            bloqueThen.insertarSentencia(nodoSentenciaThen);
+            NodoIf nodoIf = new NodoIf(tokenDeDatosIf, nodoExpresion, bloqueThen);
             return nodoIf;
         }
     }
@@ -555,7 +562,9 @@ public class AnalizadorSintactico {
         NodoFor nodoFor = forOForEach(tokenDeDatosFor, tokenDeDatos, tipo);
         match(")");
         NodoSentencia nodoSentencia = sentencia();
-        nodoFor.setSentencia(nodoSentencia);
+        NodoBloque nodoBloqueSentencia = new NodoBloque();
+        nodoBloqueSentencia.insertarSentencia(nodoSentencia);
+        nodoFor.setSentencia(nodoBloqueSentencia);
         return nodoFor;
     }
 
@@ -712,6 +721,7 @@ public class AnalizadorSintactico {
             NodoLlamadaMetodo nodoLlamadaMetodo = new NodoLlamadaMetodo(tokenDeDatos);
             TablaDeSimbolos.pushNodoConArgsActual(nodoLlamadaMetodo);
             argsActuales();
+            TablaDeSimbolos.popNodoConArgsActual();
             NodoEncadenado nodoEncadenado = encadenado();
             nodoLlamadaMetodo.setEncadenado(nodoEncadenado);
             return nodoLlamadaMetodo;

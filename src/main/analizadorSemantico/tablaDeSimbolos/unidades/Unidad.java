@@ -24,6 +24,8 @@ public abstract class Unidad {
     private int offsetParaVarLocales;
     protected int memoriaReservada;
 
+    protected int ifCounter;
+    protected int forCounter;
     protected int offset;
 
     public Unidad() {
@@ -33,6 +35,24 @@ public abstract class Unidad {
 
         offsetParaVarLocales = 0;
         memoriaReservada = 0;
+        ifCounter = 0;
+        forCounter = 0;
+    }
+
+    public void incrementarIfCounter(){
+        ifCounter++;
+    }
+
+    public void incrementarForCounter(){
+        forCounter++;
+    }
+
+    public int getIfCounter(){
+        return ifCounter;
+    }
+
+    public int getForCounter(){
+        return forCounter;
     }
 
     public void incrementarMemoriaReservada(){
@@ -117,11 +137,6 @@ public abstract class Unidad {
         TablaDeSimbolos.setUnidadActual(this);
         bloque.chequear();
 
-        //TODO: prueba para offset de parametros - aca lo cambie
-        // el offset va a depender de si el RA va a tener this
-        // 0 en adelante para los que no
-        // 1 en adelante para los que si
-        // (pq cuando lo llamo hago 3 + offset)
         int cantidadDeParametros = parametrosEnOrden.size();
         int offsetDeParametro;
         if (tieneThisElRADeLaUnidad())

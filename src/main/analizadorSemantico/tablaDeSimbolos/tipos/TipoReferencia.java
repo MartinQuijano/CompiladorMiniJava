@@ -39,11 +39,16 @@ public class TipoReferencia extends Tipo {
 
     private boolean tieneComoAncestro(Tipo tipoDeAncestroABuscar, TipoReferencia tipoDeClaseAValidarComoSubtipo) {
         Clase claseAComprobarSubtipo = TablaDeSimbolos.existeClase(tipoDeClaseAValidarComoSubtipo.getTokenDeDatos().getLexema());
+
         Clase ancestro = claseAComprobarSubtipo;
-        while (!ancestro.getTokenDeDatos().getLexema().equals("Object")) {
-            if (ancestro.getTokenDeDatos().getLexema().equals(tipoDeAncestroABuscar.getTokenDeDatos().getLexema()))
-                return true;
-            ancestro = TablaDeSimbolos.existeClase(ancestro.getHeredaDe().getLexema());
+        if (tipoDeAncestroABuscar.getTokenDeDatos().getLexema().equals("Object"))
+            return true;
+        else {
+            while (!ancestro.getTokenDeDatos().getLexema().equals("Object")) {
+                if (ancestro.getTokenDeDatos().getLexema().equals(tipoDeAncestroABuscar.getTokenDeDatos().getLexema()))
+                    return true;
+                ancestro = TablaDeSimbolos.existeClase(ancestro.getHeredaDe().getLexema());
+            }
         }
         return false;
     }

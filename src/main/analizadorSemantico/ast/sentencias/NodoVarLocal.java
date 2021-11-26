@@ -31,6 +31,7 @@ public class NodoVarLocal extends NodoSentencia {
     public void generarCodigo() {
         TablaDeSimbolos.insertarInstruccion("RMEM 1        ; reservo memoria para la variable local");
         TablaDeSimbolos.getBloques().peek().incrementarMemoriaALiberar();
+        TablaDeSimbolos.getUnidadActual().incrementarMemoriaReservada();
     }
 
     public Token getTokenDeDatos(){
@@ -41,7 +42,4 @@ public class NodoVarLocal extends NodoSentencia {
         return tipo;
     }
 
-    public void imprimir() {
-        System.out.println(tipo.getTokenDeDatos().getLexema() + " " + tokenDeDatos.getLexema());
-    }
 }

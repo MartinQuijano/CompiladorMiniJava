@@ -34,33 +34,29 @@ public class Metodo extends Unidad {
         return yaGeneroCodigo;
     }
 
+    public void setYaGeneroCodigo(boolean value) {
+        yaGeneroCodigo = value;
+    }
+
     public void setOffset(int offset) {
         this.offset = offset;
     }
 
     public void generarCodigo() {
-        //TODO arreglar. el if es para testear
-        //
         TablaDeSimbolos.setUnidadActual(this);
-        //
-        if (!tokenDeDatos.getLexema().equals("debugPrint")) {
-            TablaDeSimbolos.insertarInstruccion("l" + tokenDeDatos.getLexema() + "_" + declaradoEnClase + ":");
-            TablaDeSimbolos.insertarInstruccion("LOADFP");
-            TablaDeSimbolos.insertarInstruccion("LOADSP");
-            TablaDeSimbolos.insertarInstruccion("STOREFP");
-            bloque.generarCodigo();
-            //TODO: tendria que ver si tiene retorno
-            // Si lo tiene, va a tener return y el codigo necesario lo genera ese return. (dsp de lo que hablamos en clase se que estas instrucciones "muertas" si hay retorno tienen que quedar)
-            // Si es void y aparece la sentencia de retorno vacia, genera lo mismo que genero a continuacion
-            // Como el bloque es el que libera la memoria de las var locales, si hay un ret, va a tener que hacerse ahi la liberacion
-            TablaDeSimbolos.insertarInstruccion("STOREFP");
-            //TODO: hay que agregar este control pq los dinamicos tienen el this y hay que sumar 1 para el RET
-            if (esDinamica())
-                TablaDeSimbolos.insertarInstruccion("RET " + (parametros.size() + 1));
-            else
-                TablaDeSimbolos.insertarInstruccion("RET " + parametros.size());
-            TablaDeSimbolos.insertarInstruccion("");
-        }
+
+        TablaDeSimbolos.insertarInstruccion("l" + tokenDeDatos.getLexema() + "_" + declaradoEnClase + ":         ; agrego el label del metodo");
+        TablaDeSimbolos.insertarInstruccion("LOADFP         ; apilo el valor del registro fp");
+        TablaDeSimbolos.insertarInstruccion("LOADSP         ; apilo el valor del registro sp");
+        TablaDeSimbolos.insertarInstruccion("STOREFP         ; almaceno lo que tengo en el tope de la pila en el registro fp (con estas 3 ultimas instrucciones queda el enlace dinamico para el retorno armado)");
+        bloque.generarCodigo();
+        TablaDeSimbolos.insertarInstruccion("STOREFP          ; almaceno lo que tengo en el tope de la pila en el registro fp");
+        if (esDinamica())
+            TablaDeSimbolos.insertarInstruccion("RET " + (parametros.size() + 1) + "          ; retorno del llamado liberando memoria equivalente a la cantidad de parametros + 1 del this por ser un metodo dinamico");
+        else
+            TablaDeSimbolos.insertarInstruccion("RET " + parametros.size() + "         ; retorno del llamado liberando memoria equivalente a la cantidad de parametros");
+        TablaDeSimbolos.insertarInstruccion("");
+
         yaGeneroCodigo = true;
     }
 

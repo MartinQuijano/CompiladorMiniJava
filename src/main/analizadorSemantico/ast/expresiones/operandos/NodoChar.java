@@ -16,7 +16,6 @@ public class NodoChar extends NodoOperando {
     }
 
     public void generarCodigo() {
-        //TODO: revisar
-        TablaDeSimbolos.insertarInstruccion("PUSH " + tokenDeDatos.getLexema() + "        ; guardo en el tope de la pila el valor del literal char");
+        TablaDeSimbolos.insertarInstruccion("PUSH '" + tokenDeDatos.getLexema() + "'        ; guardo en el tope de la pila el valor del literal char");
     }
 }

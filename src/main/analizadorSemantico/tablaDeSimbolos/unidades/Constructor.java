@@ -3,7 +3,6 @@ package main.analizadorSemantico.tablaDeSimbolos.unidades;
 import main.analizadorLexico.Token;
 import main.analizadorSemantico.tablaDeSimbolos.TablaDeSimbolos;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.Tipo;
-import main.analizadorSemantico.tablaDeSimbolos.tipos.TipoReferencia;
 import main.analizadorSemantico.tablaDeSimbolos.tipos.TipoVoid;
 
 public class Constructor extends Unidad{
@@ -19,15 +18,13 @@ public class Constructor extends Unidad{
     }
 
     public void generarCodigo() {
-        TablaDeSimbolos.insertarInstruccion("l" + tokenDeDatos.getLexema() + "_" + declaradoEnClase + ":");
-        TablaDeSimbolos.insertarInstruccion("LOADFP");
-        TablaDeSimbolos.insertarInstruccion("LOADSP");
-        TablaDeSimbolos.insertarInstruccion("STOREFP");
+        TablaDeSimbolos.insertarInstruccion("l" + tokenDeDatos.getLexema() + "_" + declaradoEnClase + ":         ; agrego el label del constructor");
+        TablaDeSimbolos.insertarInstruccion("LOADFP         ; apilo el valor del registro fp");
+        TablaDeSimbolos.insertarInstruccion("LOADSP         ; apilo el valor del registro sp");
+        TablaDeSimbolos.insertarInstruccion("STOREFP         ; almaceno lo que tengo en el tope de la pila en el registro fp (con estas 3 ultimas instrucciones queda el enlace dinamico para el retorno armado)");
         bloque.generarCodigo();
-        //TODO: tener cuidado con el return; (probar)
-        TablaDeSimbolos.insertarInstruccion("STOREFP");
-        //TODO: preg. +1 por el this
-        TablaDeSimbolos.insertarInstruccion("RET " + (parametros.size()+1));
+        TablaDeSimbolos.insertarInstruccion("STOREFP          ; almaceno lo que tengo en el tope de la pila en el registro fp");
+        TablaDeSimbolos.insertarInstruccion("RET " + (parametros.size()+1) + "          ; retorno del llamado liberando memoria equivalente a la cantidad de parametros + 1");
         TablaDeSimbolos.insertarInstruccion("");
     }
 
@@ -35,15 +32,8 @@ public class Constructor extends Unidad{
         return true;
     }
 
-    public String getForma(){
-        return "static";
-    }
-
     public Tipo getTipo() {
         return new TipoVoid();
     }
 
-    public Tipo getTipoRetorno() {
-        return new TipoVoid();
-    }
 }
